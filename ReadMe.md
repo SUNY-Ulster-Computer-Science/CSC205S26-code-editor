@@ -173,7 +173,7 @@ We will go over the structure of the `Editor` interface and its methods in class
 To compile the program, navigate to the `TextEditor` directory in your terminal and run the following command:
 
 ```bash
-javac -d bin src/*.java src/simpleUi/*.java
+javac -d bin src/**/*.java
 ```
 
 javac is the Java compiler, `-d bin` specifies the output directory for compiled classes, and `src/*.java src/simpleUi/*.java` includes all Java source files in the `src` and `src/simpleUi` directories.
@@ -185,5 +185,5 @@ When you add your data structure classes (e.g., `ArrayList`, `LinkedList`, `BST`
 To run the program, use the following command:
 
 ```bash
-java -cp bin Main
+java -cp bin app.Main
 ```
