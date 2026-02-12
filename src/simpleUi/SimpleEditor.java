@@ -16,7 +16,7 @@ public final class SimpleEditor extends AbstractEditor {
     init();
   }
 
-  private void init() {
+   private void init() {
     area.setLineWrap(true);
     area.setWrapStyleWord(true);
 
@@ -28,8 +28,38 @@ public final class SimpleEditor extends AbstractEditor {
     content.add(buttonRow, BorderLayout.SOUTH);
 
     frame.setContentPane(content);
-  }
+    
+    JScrollPane scrollPane = new JScrollPane(area);
 
+    JTextArea lines = new JTextArea("1");
+    lines.setBackground(Color.LIGHT_GRAY);
+    lines.setEditable(false); //dont want this edited
+    lines.setFocusable(false);
+    lines.setFont(area.getFont()); // Match the editor font
+
+    area.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+        private String getNumbers() {
+            int lineposition = area.getDocument().getLength();
+            Element root = area.getDocument().getDefaultRootElement();
+            StringBuilder sb = new StringBuilder("1");
+            for (int i = 2; i <= root.getElementIndex(lineposition) + 1; i++) {
+                sb.append(System.lineSeparator()).append(i);
+            }
+            return sb.toString();
+        }
+        public void changedUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        public void insertUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        public void removeUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+    });
+
+    scrollPane.setRowHeaderView(lines);
+
+    JPanel content1 = new JPanel(new BorderLayout(10, 10));
+    content1.add(scrollPane, BorderLayout.CENTER); // Use the scrollPane here
+    content1.add(buttonRow, BorderLayout.SOUTH);
+
+    frame.setContentPane(content1);
+  }
   @Override
   protected void uiShow() {
     SwingUtilities.invokeLater(() -> frame.setVisible(true));
