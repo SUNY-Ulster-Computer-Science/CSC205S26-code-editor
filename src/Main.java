@@ -72,7 +72,7 @@ private static BST<String> wordTree = new BST<>();
     
     // REPLACE BUTTON
     // Purpose: perform replacement and record steps for the operation.
-    ui.addButton("Replace", () -> {
+    ui.addButton("Replace (Case sensitive)", () -> {
     	String find = ui.prompt("Text to find:");
         String replace = ui.prompt("Replace with:");
 
@@ -134,49 +134,6 @@ private static BST<String> wordTree = new BST<>();
          // Apply redo
          String restored = redoStack.pop();
          ui.setText(restored);
-
-    });
-
-    // PRINT QUEUE BUTTON
-    // Purpose: manage virtual print queue (view/start jobs).
-    ui.addButton("Print Queue", () -> {
-    	 long now = System.currentTimeMillis();
-
-         // Remove expired jobs
-         while (!printTimes.isEmpty()) {
-             long t = printTimes.peek();
-             if (now - t >= 60000) { // 60 sec
-                 printTimes.dequeue();
-                 printQueue.dequeue();
-             } else break;
-         }
-
-         // Add new print job
-         String currentText = ui.getText();
-         int jobNumber = printQueue.size() + 1;
-
-         printQueue.enqueue(currentText);
-         printTimes.enqueue(now);
-
-         ui.alert("Print job " + jobNumber + " added to the queue.");
-
-         // Show all jobs
-         StringBuilder sb = new StringBuilder("Print Queue:\n\n");
-         int count = printQueue.size();
-         for (int i = 0; i < count; i++) {
-             String temp = printQueue.dequeue();
-             long tt = printTimes.dequeue();
-
-             sb.append("Job ").append(i + 1).append(":\n")
-               .append(temp.substring(0, Math.min(50, temp.length())))
-               .append("...\n\n");
-
-             // Put back
-             printQueue.enqueue(temp);
-             printTimes.enqueue(tt);
-         }
-
-         ui.alert(sb.toString());
 
     });
 
