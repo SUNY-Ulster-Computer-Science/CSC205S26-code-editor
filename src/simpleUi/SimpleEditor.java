@@ -54,7 +54,7 @@ public final class SimpleEditor extends AbstractEditor {
 
     scrollPane.setRowHeaderView(lines);
 
-    JPanel content1 = new JPanel(new BorderLayout(10, 10));
+    JPanel content1 = new JPanel(new BorderLayout(10, 5));
     content1.add(scrollPane, BorderLayout.CENTER); // Use the scrollPane here
     content1.add(buttonRow, BorderLayout.SOUTH);
 
