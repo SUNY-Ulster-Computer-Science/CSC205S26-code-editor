@@ -269,65 +269,88 @@ private static BST<String> wordTree = new BST<>();
     });
         
 
-        
-
     // LOAD FILE BUTTON
     // Purpose: load text from a file into the editor.
     ui.addButton("Load File", () -> {
+
+    	//add file explorer
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         
-    	//find file
-    	String filename = ui.prompt("Enter filename (example: text.txt) (Do not forget the .txt or it wont work):");
-        if (filename == null || filename.isEmpty()) return;
-        
-        //need to save older stuff first
-        
+        //sets window dialogue
+        chooser.setDialogTitle("Open .txt file (or java tbd)");
+        //set to files only
+        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override public boolean accept(java.io.File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
+                //limits to only .txt files
+            }
+            @Override public String getDescription() {
+                return "Text files (*.txt)";
+            }
+        });
+
+        int result = chooser.showOpenDialog(null);
+        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File file = chooser.getSelectedFile();
+        if (file == null) return;
+
+        // Save undo before change
         String oldText = ui.getText();
         undoStack.push(oldText);
-        //pushes old text out
-        
-        System.out.println("Looking for: " + java.nio.file.Paths.get(filename).toAbsolutePath());
-        //used for debug and to make sure the file is in the right location
+        while (!redoStack.isEmpty()) redoStack.pop();
 
         try {
-        	//find filename
-        	java.nio.file.Path filePath = java.nio.file.Paths.get(filename);
-        	//find text
-            java.util.List<String> lines = java.nio.file.Files.readAllLines(filePath);
-            //add text to one variable string, was unsure how at first but I got it done
-            String fileContent = String.join("\n", lines);
-            //make string our text on UI
+            String fileContent = java.nio.file.Files.readString(file.toPath());
+            //sets new text
             ui.setText(fileContent);
-        }
- 
-        catch (java.nio.file.NoSuchFileException e) { //was unsure which exception to use
-            ui.alert("Error: File not found.\nMake sure the file is in the project folder.");
-            // Undo push should be undone since no change occurs:
-            undoStack.pop();
         } catch (Exception e) {
-            ui.alert("Error loading file:\n" + e.getMessage());
-            // Undo push undone for same reason:
-            undoStack.pop();
+        	//changed catch since it doesnt need to be in project folder now
+            ui.alert("Error loading file: \n" + e.getMessage());
+            undoStack.pop(); // undo push because no change happened
         }
-        
-    }); 
+    });
     
     ui.addButton("Save File", () -> {
-    	
-    	//find file
-    	String filename = ui.prompt("Enter filename to save as (example: text.txt) (Do not forget the .txt or it wont work):");
-        if (filename == null || filename.isEmpty()) return;
-    	
-        try { 
-        	String textcontent = ui.getText();
-        	
-        	java.nio.file.Path filePath = java.nio.file.Paths.get(filename);
-        	
-        	java.nio.file.Files.writeString(filePath, textcontent); 	
-        } catch (Exception e) {
-        	ui.alert("Error saving file:\n" + e.getMessage());
-        	
+
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setDialogTitle("Save .txt file");
+        //set to files only
+        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override public boolean accept(java.io.File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
+            }
+            @Override public String getDescription() {
+                return "Text files (*.txt)";
+            }
+        });
+
+        int result = chooser.showSaveDialog(null);
+        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File file = chooser.getSelectedFile();
+        if (file == null) return;
+
+        // Force .txt extension
+        String path = file.getAbsolutePath();
+        if (!path.toLowerCase().endsWith(".txt")) {
+            file = new java.io.File(path + ".txt");
+            //normalize and ensure file is saved as .txt
         }
-        
+
+        try {
+            java.nio.file.Files.writeString(file.toPath(), ui.getText());
+            ui.alert("File saved: \n" + file.getAbsolutePath());
+            //shows file directory
+        } catch (Exception e) {
+            ui.alert("Error saving file:\n" + e.getMessage());
+        }
     });
 
     // Load demo text for testing.
