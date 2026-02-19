@@ -137,6 +137,19 @@ private static BST<String> wordTree = new BST<>();
 
     });
 
+	   ui.addButton("Search and Highlight", () -> {
+        String term = ui.prompt("Highlight what word/phrase?");
+        if (term == null) return;
+
+        term = term.trim();
+        if (term.isEmpty()) {
+            ui.alert("Nothing to highlight.");
+            return;
+        }
+//highlights input term
+        ui.highlight(term);
+    });
+
     // SEARCH - ArrayList
     // Purpose: Use ArrayList and perform a linear search while counting steps
     ui.addButton("Search ArrayList", () -> {
