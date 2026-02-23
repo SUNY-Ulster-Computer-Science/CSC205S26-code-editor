@@ -16,6 +16,7 @@ import genericlist.StepCounter;
 import genericlist.GenericList;
 import linkedlist.LinkedGenericList;
 
+//documentation test change -conti
 public class Main {
 	
 private static BST<String> wordTree = new BST<>();
