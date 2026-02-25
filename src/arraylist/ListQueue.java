@@ -2,8 +2,16 @@ package arraylist;
 
 import genericlist.GenericList;
 
+/*
+ * Creates queue from generic list
+ */
 public final class ListQueue<E> implements Queue<E> {
+	/*represents generic list*/
 private final GenericList<E> list;
+
+/*
+ * Creates queue from generic list
+ */
 public ListQueue(GenericList<E> list) {
 this.list = list;
 }

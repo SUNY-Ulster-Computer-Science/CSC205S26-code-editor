@@ -3,18 +3,33 @@ import genericlist.AbstractGenericList;
 import genericlist.GenericList;
 import genericlist.StepCounter;
 
+/*
+ * Creates list for linear search
+ */
 public class LinkedGenericList<E> extends AbstractGenericList<E> {
+/*
+ * Private implementation of LinkedGenericList for searching
+ * specific sections of text
+ */
 private class Node {
+	/*represents element being searched for*/
 E element;
+	/*represents section being searched*/
 Node next;
 Node(E element) {
 this.element = element;
 this.next = null;
 }
 }
+/*represents beginning of searched node*/
 private Node head;
+/*represents end of searched node*/
 private Node tail;
 
+/*
+ * Constructs empty list
+ * @param StepCounter counter - number of indexes
+ */
 public LinkedGenericList(StepCounter counter) {
     super(counter);
     head = tail = null;

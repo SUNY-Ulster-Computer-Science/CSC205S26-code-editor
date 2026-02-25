@@ -1,13 +1,37 @@
 package genericlist;
-public interface GenericList<E> {
-void add(E element);
-void add(int index, E element);
-E get(int index);
-E remove(int index);
-int contains(E element); // index of first match, or -1
-int size();
-boolean isEmpty();
-void clear();
-@Override String toString();
-GenericList<E> newList();
+
+/*
+ * allows for protected adjustment of list size
+ */
+public class StepCounter {
+
+/*represents amount of steps*/
+private int steps = 0;
+
+/*
+ * increases # of steps by 1
+ * @param none
+ * @return none
+ */
+public void inc() { steps++; }
+
+/*
+ * increases # of steps by n
+ * @param int n - number of added steps
+ */
+public void add(int n) { steps += n; }
+
+/*
+ * retuns # of steps
+ * @param none
+ * @return steps
+ */
+public int get() { return steps; }
+
+/*
+ * sets steps to 0
+ * @param none
+ * @return none
+ */
+public void reset() { steps = 0; }
 }
