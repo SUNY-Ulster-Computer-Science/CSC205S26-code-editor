@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\src",
-    "\\src\\arraylist"
+    "\\src\\arraylist",
+    "\\src\\genericlist"
   ],
-  "SelectedNode": "\\src\\arraylist\\ArrayGenericList.java",
+  "SelectedNode": "\\src\\genericlist\\GenericList.java",
   "PreviewInSolutionExplorer": false
 }
