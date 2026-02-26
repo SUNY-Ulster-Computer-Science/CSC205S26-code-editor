@@ -4,11 +4,25 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-public final class SimpleEditor extends AbstractEditor {
-  private final JFrame frame;
-  private final JTextArea area;
-  private final JPanel buttonRow;
 
+/*
+ * Concrete implementation of the Editor interface, 
+ * provides a basic text editor UI
+ */
+public final class SimpleEditor extends AbstractEditor {
+/*represents new window display*/
+  private final JFrame frame;
+/*represents area for text*/  
+  private final JTextArea area;
+/*represents area for buttons*/
+  private final JPanel buttonRow;
+  
+  
+/*
+ * Constructs simple Text Editor in a new window
+ * @param title - text editor name
+ * @returns none
+ */
   public SimpleEditor(String title) {
     frame = new JFrame(title);
     area = new JTextArea();
@@ -16,6 +30,11 @@ public final class SimpleEditor extends AbstractEditor {
     init();
   }
 
+  /*
+   * Builds frame to display content in text editor
+   * @param none
+   * @return none
+   */
    private void init() {
     area.setLineWrap(true);
     area.setWrapStyleWord(true);
@@ -126,6 +145,11 @@ public final class SimpleEditor extends AbstractEditor {
     clearHighlights();
   }
 
+  /*
+   * Removes highlights from display
+   * @param none
+   * @return none 
+   */
   private void clearHighlights() {
     area.getHighlighter().removeAllHighlights();
   }

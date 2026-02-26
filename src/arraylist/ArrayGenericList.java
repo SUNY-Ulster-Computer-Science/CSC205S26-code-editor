@@ -5,18 +5,34 @@ import genericlist.StepCounter;
 import genericlist.GenericList;
 import java.util.Arrays;
 
+/*
+ * creates Specific list from given parameters
+ */
 public class ArrayGenericList<E> extends AbstractGenericList<E> {
-
+	
+	/*represents size of elements*/
     private static final int defaultvalue = 10;
+    /*represents unspecified elements*/
     private E[] elements;
 
     /** Default constructor */
+    /*
+     * Creates list from counter
+     * fills in with unspecified elements
+     * @param counter - size of list
+     */
     @SuppressWarnings("unchecked")
     public ArrayGenericList(StepCounter counter) {
         super(counter);
         elements = (E[]) new Object[defaultvalue];
     }
-
+    
+    /*
+     * Creates list from counter,
+     * fills in with specified number of elements
+     * @param capacity -amount of elements
+     * @param counter - size of list
+     */
     @SuppressWarnings("unchecked")
     public ArrayGenericList(int capacity, StepCounter counter) {
     	super(counter);
@@ -24,6 +40,11 @@ public class ArrayGenericList<E> extends AbstractGenericList<E> {
         elements = (E[]) new Object[capacity];
     }
 
+    /*
+     * ensures there is space in a given list
+     * @param none
+     * @return none
+     */
     @SuppressWarnings("unchecked")
     private void ensureCapacity() {
         if (size >= elements.length) {

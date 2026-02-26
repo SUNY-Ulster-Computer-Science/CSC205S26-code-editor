@@ -3,8 +3,17 @@ package searchsort;
 import genericlist.GenericList;
 import genericlist.StepCounter;
 
+/*
+ * collection of Search and Sort methods,
+ * as well as a method to merge lists
+ */
 public class SearchSort {
-
+	
+	/*
+	 * bubble sort algorithm
+	 * @param list - list to be sorted
+	 * @param counter - location within list
+	 */
     public static <E extends Comparable<E>>
     void bubbleSort(GenericList<E> list, StepCounter counter) {
         int n = list.size();
@@ -19,6 +28,11 @@ public class SearchSort {
         }
     }
 
+    /*
+	 * selection sort algorithm
+	 * @param list - list to be sorted
+	 * @param counter - location within list
+	 */
     public static <E extends Comparable<E>>
     void selectionSort(GenericList<E> list, StepCounter counter) {
         int n = list.size();
@@ -38,6 +52,11 @@ public class SearchSort {
         }
     }
 
+    /*
+	 * insertion sort algorithm
+	 * @param list - list to be sorted
+	 * @param counter - location within list
+	 */
     public static <E extends Comparable<E>>
     void insertionSort(GenericList<E> list, StepCounter counter) {
         int n = list.size();
@@ -57,6 +76,11 @@ public class SearchSort {
         }
     }
 
+    /*
+	 * merge sort algorithm
+	 * @param list - list to be sorted
+	 * @param counter - location within list
+	 */
     public static <E extends Comparable<E>>
     void mergeSort(GenericList<E> list, StepCounter counter) {
         if (list.size() <= 1) return;
@@ -74,6 +98,12 @@ public class SearchSort {
         merge(left, right, list, counter);
     }
 
+    /*
+	 * merges two lists together
+	 * @param left - 1st list to be merged
+	 * @param right - 2nd list to be merged
+	 * @param counter - location within list
+	 */
     private static <E extends Comparable<E>>
     void merge(GenericList<E> left, GenericList<E> right,
                GenericList<E> output, StepCounter counter) {
@@ -103,6 +133,12 @@ public class SearchSort {
         }
     }
 
+    /*
+ 	 * linear search algorithm
+ 	 * @param list - list being searched
+ 	 * @param target - element being searched for
+ 	 * @param counter - location within list
+ 	 */
     public static <E>
     int linearSearch(GenericList<E> list, E target, StepCounter counter) {
         for (int i = 0; i < list.size(); i++) {
@@ -113,7 +149,13 @@ public class SearchSort {
         }
         return -1;
     }
-
+    
+    /*
+ 	 * binary search algorithm
+ 	 * @param list - list being searched
+ 	 * @param target - element being searched for
+ 	 * @param counter - location within list
+ 	 */
     public static <E extends Comparable<E>>
     int binarySearch(GenericList<E> list, E target, StepCounter counter) {
         int low = 0, high = list.size() - 1;

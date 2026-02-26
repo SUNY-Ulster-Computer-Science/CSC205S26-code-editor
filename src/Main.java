@@ -16,6 +16,14 @@ import genericlist.StepCounter;
 import genericlist.GenericList;
 import linkedlist.LinkedGenericList;
 
+/*
+ * Executes TextEditor program
+ * Creates a Simple Text Editor with Save/Load functions, search functions
+ * clear, undo, and redo, and Replace function. Can also load in demo text
+ * @author Matthew Biegel, Michael McGrath, Robert Conti, Rui Li, Luke Padilla
+ * @version 1.0.1
+ * @since 2/25/26
+ * */
 public class Main {
 	
 private static BST<String> wordTree = new BST<>();

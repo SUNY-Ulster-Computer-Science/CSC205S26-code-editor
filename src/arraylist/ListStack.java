@@ -2,8 +2,16 @@ package arraylist;
 
 import genericlist.GenericList;
 
+/*
+ * Creates stack from generic list
+ */
 public final class ListStack<E> implements Stack<E> {
+	/*represents generic list*/
 private final GenericList<E> list;
+
+/*
+ * Creates stack from generic list
+ */
 public ListStack(GenericList<E> list) {
 this.list = list;
 }
