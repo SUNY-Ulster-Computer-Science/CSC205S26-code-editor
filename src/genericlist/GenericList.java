@@ -1,37 +1,71 @@
 package genericlist;
-
 /*
- * allows for protected adjustment of list size
+ * Provides simple list methods
  */
-public class StepCounter {
-
-/*represents amount of steps*/
-private int steps = 0;
+public interface GenericList<E> {
+/*
+ * adds Element to list
+ * @param element E
+ * @returns none
+ */
+void add(E element);
 
 /*
- * increases # of steps by 1
+ *  adds Element to list at index
+ *  @param element E
+ *  @param int index - location of insert
+ *  @return none
+ */
+void add(int index, E element);
+
+/*
+ * returns Element at index
+ * @param index - location of Element
+ * @return Element 
+ */
+E get(int index);
+
+/*
+ * removes Element at index
+ * @param index - location of Element
+ * @returns Element
+ */
+E remove(int index);
+
+/*
+ * return index of Element
+ * @param element E - desired Element
+ * @returns int index - location of Element
+ */
+int contains(E element); // index of first match, or -1
+
+/*
+ * size of list
+ * @param none
+ * @return int - size of list
+ */
+int size();
+
+/* 
+ * checks if list contains Elements
+ * @param none
+ * @return boolean isEmpty
+ */
+boolean isEmpty();
+
+/*
+ * clears list
  * @param none
  * @return none
  */
-public void inc() { steps++; }
+void clear();
+
+@Override String toString();
 
 /*
- * increases # of steps by n
- * @param int n - number of added steps
- */
-public void add(int n) { steps += n; }
-
-/*
- * retuns # of steps
+ * constructs new list
  * @param none
- * @return steps
+ * @return none 
  */
-public int get() { return steps; }
-
-/*
- * sets steps to 0
- * @param none
- * @return none
- */
-public void reset() { steps = 0; }
+GenericList<E> newList();
 }
