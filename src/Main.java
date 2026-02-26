@@ -146,7 +146,7 @@ private static BST<String> wordTree = new BST<>();
     });
 
 	   ui.addButton("Search and Highlight", () -> {
-        String term = ui.prompt("Highlight what word/phrase?");
+        String term = ui.prompt("Highlight what word/phrase? (Not case sensitive)");
         if (term == null) return;
 
         term = term.trim();
