@@ -138,4 +138,10 @@ public void clear() {
     size = 0;
     counter.inc();
 }
+
+@Override
+public GenericList<E> newList() {
+	// TODO Auto-generated method stub
+	return null;
+}
 }
