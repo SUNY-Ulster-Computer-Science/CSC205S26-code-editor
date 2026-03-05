@@ -141,4 +141,10 @@ public class ArrayGenericList<E> extends AbstractGenericList<E> {
         sb.append("]");
         return sb.toString();
     }
+
+	@Override
+	public GenericList<E> newList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
