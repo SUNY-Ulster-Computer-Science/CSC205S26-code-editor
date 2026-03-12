@@ -298,18 +298,19 @@ private static BST<String> wordTree = new BST<>();
         javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         
         //sets window dialogue
-        chooser.setDialogTitle("Open .txt file (or java tbd)");
+        chooser.setDialogTitle("Open .txt file, or java file)");
         //set to files only
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override public boolean accept(java.io.File f) {
-                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
-                //limits to only .txt files
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") || f.getName().toLowerCase().endsWith(".java");
+               
+                //limits to only .txt/.java files
             }
             @Override public String getDescription() {
-                return "Text files (*.txt)";
+                return "Text and Java files (*.txt, *.java)";
             }
         });
 
