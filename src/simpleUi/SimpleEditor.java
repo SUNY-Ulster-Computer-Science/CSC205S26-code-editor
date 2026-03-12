@@ -4,6 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
+//ui improvements needed, drop down menu
 
 /*
  * Concrete implementation of the Editor interface, 
@@ -16,6 +17,9 @@ public final class SimpleEditor extends AbstractEditor {
   private final JTextArea area;
 /*represents area for buttons*/
   private final JPanel buttonRow;
+  
+  private JMenuBar menuBar;
+  //for menu
   
   
 /*
@@ -36,7 +40,7 @@ public final class SimpleEditor extends AbstractEditor {
    * @return none
    */
    private void init() {
-    area.setLineWrap(true);
+   area.setLineWrap(true);
     area.setWrapStyleWord(true);
 
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -78,7 +82,148 @@ public final class SimpleEditor extends AbstractEditor {
     content1.add(buttonRow, BorderLayout.SOUTH);
 
     frame.setContentPane(content1);
-  }
+    
+    //adding drop down menu
+	   
+	// 1. Create the Menu Bar
+	    menuBar = new JMenuBar();
+
+	    // 2. Create a Menu (e.g., File)
+	    JMenu fileMenu = new JMenu("File");
+	    JMenu editMenu = new JMenu("Edit");
+        JMenu searchMenu = new JMenu("Search");
+        JMenu helpMenu = new JMenu("Info");
+        JMenu settingsMenu = new JMenu("Settings");
+
+	    // 3. Create Menu Items
+	    JMenuItem newItem = new JMenuItem("New");
+	    JMenuItem openItem = new JMenuItem("Open");
+	    JMenuItem saveItem = new JMenuItem("Save");
+	    JMenuItem exitItem = new JMenuItem("Exit");
+
+	    // 4. Add items to the file menu
+	    fileMenu.add(newItem);
+	    fileMenu.add(saveItem);
+	    fileMenu.add(openItem);
+	    fileMenu.addSeparator(); // Adds a visual line
+	    fileMenu.add(exitItem);
+	    
+	    editMenu.add(new JMenuItem("Undo"));
+        editMenu.add(new JMenuItem("Redo"));
+        editMenu.add(new JMenuItem("Clear"));
+        
+        searchMenu.add(new JMenuItem("Find"));
+        searchMenu.add(new JMenuItem("Replace"));
+        searchMenu.add(new JMenuItem("Highlight Matches"));
+        
+        JMenuItem lightModeItem = new JMenuItem("Light Mode");
+        JMenuItem darkModeItem = new JMenuItem("Dark Mode");
+        
+        settingsMenu.add(lightModeItem);
+        settingsMenu.add(darkModeItem);
+        
+        lightModeItem.addActionListener(e -> applyLightMode());
+        darkModeItem.addActionListener(e -> applyDarkMode());
+
+	    // 5. Add menu to the bar, and bar to the frame
+	    menuBar.add(fileMenu);
+	    menuBar.add(editMenu);
+        menuBar.add(searchMenu);
+        menuBar.add(helpMenu);
+        menuBar.add(settingsMenu);
+	    frame.setJMenuBar(menuBar);
+	    
+	    
+
+	    
+	    JMenuItem helpItem = new JMenuItem("Help");
+
+	    helpItem.addActionListener(e -> {
+	        JOptionPane.showMessageDialog(
+	            frame,
+	            "Welcome to the our Text Editor!\n\n"
+	          + "File:\nOpen and save text and java files.\n\n"
+	          + "Edit:\nUndo, redo, and clear text.\n\n"
+	          + "Search:\nFind words and replace text.\n\n"
+	          + "Use the buttons or menus to perform actions.\n\n"
+	          + "Brought to you by: Matthew Biegel, Robert Conti, \nMichael McGrath, Rui Li, Luke Padilla \n 2026",
+	          "Help",
+	            JOptionPane.INFORMATION_MESSAGE
+	        );
+	    });
+
+	    helpMenu.add(helpItem);
+	    
+	    // 6. Add logic to the items (optional but recommended)
+	    exitItem.addActionListener(e -> System.exit(0));
+	}
+ 
+   
+   private void applyDarkMode() {
+	    Color bg = new Color(30, 30, 30);
+	    Color panelBg = new Color(45, 45, 45);
+	    Color textBg = new Color(35, 35, 35);
+	    Color fg = new Color(230, 230, 230);
+
+	    area.setBackground(textBg);
+	    area.setForeground(fg);
+	    area.setCaretColor(Color.WHITE);
+	    area.setSelectionColor(new Color(80, 120, 180));
+	    area.setSelectedTextColor(Color.WHITE);
+
+	    buttonRow.setBackground(panelBg);
+
+	    if (menuBar != null) {
+	        menuBar.setBackground(panelBg);
+	        menuBar.setForeground(fg);
+	    }
+	    
+	    for (MenuElement menu : menuBar.getSubElements()) {
+	        if (menu.getComponent() instanceof JMenu) {
+	            JMenu m = (JMenu) menu.getComponent();
+	            m.setForeground(Color.WHITE);
+	        }
+	    }
+
+	  
+	    frame.repaint();
+	}
+   
+   
+   
+   private void applyLightMode() {
+	    Color bg = Color.WHITE;
+	    Color panelBg = new Color(240, 240, 240);
+	    Color textBg = Color.WHITE;
+	    Color fg = Color.BLACK;
+
+	    area.setBackground(textBg);
+	    area.setForeground(fg);
+	    area.setCaretColor(Color.BLACK);
+	    area.setSelectionColor(new Color(180, 200, 240));
+	    area.setSelectedTextColor(Color.BLACK);
+
+	    buttonRow.setBackground(panelBg);
+
+	    if (menuBar != null) {
+	        menuBar.setBackground(panelBg);
+	        menuBar.setForeground(fg);
+	    }
+
+	    for (MenuElement menu : menuBar.getSubElements()) {
+	        if (menu.getComponent() instanceof JMenu) {
+	            JMenu m = (JMenu) menu.getComponent();
+	            m.setForeground(Color.BLACK);
+	        }
+	    }
+
+
+	    frame.repaint();
+	    
+	    
+	}
+   
+  
   @Override
   protected void uiShow() {
     SwingUtilities.invokeLater(() -> frame.setVisible(true));
