@@ -131,7 +131,7 @@ public class BST<E extends Comparable<E>> implements BSTInterface<E> {
     }
 }
 
-    public boolean isEmpty() {
+    /* public boolean isEmpty() {
         return size == 0;
     }
 
@@ -173,5 +173,4 @@ public class BST<E extends Comparable<E>> implements BSTInterface<E> {
         if (cmp == 0) return true;
         else if (cmp < 0) return contains(node.left, value, counter);
         else return contains(node.right, value, counter);
-    }
-}
+    }*/
