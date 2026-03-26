@@ -5,6 +5,8 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.event.*;
 
+//ui improvements needed, drop down menu
+
 /*
  * Concrete implementation of the Editor interface, 
  * provides a basic text editor UI with JTextPane support
@@ -16,6 +18,46 @@ public final class SimpleEditor extends AbstractEditor {
     private final JTextPane textPane;
     /*represents area for buttons*/
     private final JPanel buttonRow;
+/*represents new window display*/
+  private final JFrame frame;
+/*represents area for text*/  
+  private final JTextArea area;
+/*represents area for buttons*/
+  private final JPanel buttonRow;
+  
+  private JMenuBar menuBar;
+  //for menu
+  
+  
+/*
+ * Constructs simple Text Editor in a new window
+ * @param title - text editor name
+ * @returns none
+ */
+  public SimpleEditor(String title) {
+    frame = new JFrame(title);
+    area = new JTextArea();
+    buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    init();
+  }
+
+  /*
+   * Builds frame to display content in text editor
+   * @param none
+   * @return none
+   */
+   private void init() {
+   area.setLineWrap(true);
+    area.setWrapStyleWord(true);
+
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setSize(1300, 800);
+
+    JPanel content = new JPanel(new BorderLayout(5, 5));
+    content.add(new JScrollPane(area), BorderLayout.CENTER);
+    content.add(buttonRow, BorderLayout.SOUTH);
+
+    frame.setContentPane(content);
     
     /*
      * Constructs simple Text Editor in a new window
@@ -136,6 +178,211 @@ public final class SimpleEditor extends AbstractEditor {
             } catch (BadLocationException ignored) { }
             index += term.length();
         }
+        public void changedUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        public void insertUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        public void removeUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+    });
+
+    scrollPane.setRowHeaderView(lines);
+
+    JPanel content1 = new JPanel(new BorderLayout(10, 5));
+    content1.add(scrollPane, BorderLayout.CENTER); // Use the scrollPane here
+    content1.add(buttonRow, BorderLayout.SOUTH);
+
+    frame.setContentPane(content1);
+    
+    //adding drop down menu
+	   
+	// 1. Create the Menu Bar
+	    menuBar = new JMenuBar();
+	    JMenuBar menuBar = new JMenuBar();
+
+	    // 2. Create a Menu (e.g., File)
+	    JMenu fileMenu = new JMenu("File");
+	    JMenu editMenu = new JMenu("Edit");
+        JMenu searchMenu = new JMenu("Search");
+        JMenu helpMenu = new JMenu("Info");
+        JMenu settingsMenu = new JMenu("Settings");
+
+	    // 3. Create Menu Items
+	    JMenuItem newItem = new JMenuItem("New");
+	    JMenuItem openItem = new JMenuItem("Open");
+	    JMenuItem saveItem = new JMenuItem("Save");
+	    JMenuItem exitItem = new JMenuItem("Exit");
+
+	    // 4. Add items to the file menu
+	    fileMenu.add(newItem);
+	    fileMenu.add(saveItem);
+	    fileMenu.add(openItem);
+	    fileMenu.addSeparator(); // Adds a visual line
+	    fileMenu.add(exitItem);
+	    
+	    editMenu.add(new JMenuItem("Undo"));
+        editMenu.add(new JMenuItem("Redo"));
+        editMenu.add(new JMenuItem("Clear"));
+        
+        searchMenu.add(new JMenuItem("Find"));
+        searchMenu.add(new JMenuItem("Replace"));
+        searchMenu.add(new JMenuItem("Highlight Matches"));
+        
+        JMenuItem lightModeItem = new JMenuItem("Light Mode");
+        JMenuItem darkModeItem = new JMenuItem("Dark Mode");
+        
+        settingsMenu.add(lightModeItem);
+        settingsMenu.add(darkModeItem);
+        
+        lightModeItem.addActionListener(e -> applyLightMode());
+        darkModeItem.addActionListener(e -> applyDarkMode());
+
+
+	    // 5. Add menu to the bar, and bar to the frame
+	    menuBar.add(fileMenu);
+	    menuBar.add(editMenu);
+        menuBar.add(searchMenu);
+        menuBar.add(helpMenu);
+        menuBar.add(settingsMenu);
+	    frame.setJMenuBar(menuBar);
+	    
+	    
+	    frame.setJMenuBar(menuBar);
+
+	    
+	    JMenuItem helpItem = new JMenuItem("Help");
+
+	    helpItem.addActionListener(e -> {
+	        JOptionPane.showMessageDialog(
+	            frame,
+	            "Welcome to the our Text Editor!\n\n"
+	          + "File:\nOpen and save text and java files.\n\n"
+	          + "Edit:\nUndo, redo, and clear text.\n\n"
+	          + "Search:\nFind words and replace text.\n\n"
+	          + "Use the buttons or menus to perform actions.\n\n"
+	          + "Brought to you by: Matthew Biegel, Robert Conti, \nMichael McGrath, Rui Li, Luke Padilla \n 2026",
+	          "Help",
+	            JOptionPane.INFORMATION_MESSAGE
+	        );
+	    });
+
+	    helpMenu.add(helpItem);
+	    menuBar.add(helpMenu);
+	    
+	    // 6. Add logic to the items (optional but recommended)
+	    exitItem.addActionListener(e -> System.exit(0));
+	}
+ 
+   
+   private void applyDarkMode() {
+	    Color bg = new Color(30, 30, 30);
+	    Color panelBg = new Color(45, 45, 45);
+	    Color textBg = new Color(35, 35, 35);
+	    Color fg = new Color(230, 230, 230);
+
+	    area.setBackground(textBg);
+	    area.setForeground(fg);
+	    area.setCaretColor(Color.WHITE);
+	    area.setSelectionColor(new Color(80, 120, 180));
+	    area.setSelectedTextColor(Color.WHITE);
+
+	    buttonRow.setBackground(panelBg);
+
+	    if (menuBar != null) {
+	        menuBar.setBackground(panelBg);
+	        menuBar.setForeground(fg);
+	    }
+	    
+	    for (MenuElement menu : menuBar.getSubElements()) {
+	        if (menu.getComponent() instanceof JMenu) {
+	            JMenu m = (JMenu) menu.getComponent();
+	            m.setForeground(Color.WHITE);
+	        }
+	    }
+
+	  
+	    frame.repaint();
+	}
+   
+   
+   
+   private void applyLightMode() {
+	    Color bg = Color.WHITE;
+	    Color panelBg = new Color(240, 240, 240);
+	    Color textBg = Color.WHITE;
+	    Color fg = Color.BLACK;
+
+	    area.setBackground(textBg);
+	    area.setForeground(fg);
+	    area.setCaretColor(Color.BLACK);
+	    area.setSelectionColor(new Color(180, 200, 240));
+	    area.setSelectedTextColor(Color.BLACK);
+
+	    buttonRow.setBackground(panelBg);
+
+	    if (menuBar != null) {
+	        menuBar.setBackground(panelBg);
+	        menuBar.setForeground(fg);
+	    }
+
+
+	    frame.repaint();
+	    
+	    
+	}
+   
+  
+  @Override
+  protected void uiShow() {
+    SwingUtilities.invokeLater(() -> frame.setVisible(true));
+  }
+
+  @Override
+  protected String uiGetText() { return area.getText(); }
+
+  @Override
+  protected void uiSetText(String text) { area.setText(text); }
+
+  @Override
+  protected void uiClearText() { area.setText(""); clearHighlights(); }
+
+  @Override
+  protected void uiAddButton(String label, Runnable action) {
+    JButton b = new JButton(label);
+    b.addActionListener(e -> action.run());
+    buttonRow.add(b);
+    buttonRow.revalidate();
+    buttonRow.repaint();
+  }
+
+  @Override
+  protected void uiAlert(String message) {
+    JOptionPane.showMessageDialog(frame, message);
+  }
+
+  @Override
+  protected String uiPrompt(String message) {
+    return JOptionPane.showInputDialog(frame, message);
+  }
+
+  @Override
+  protected void uiHighlight(String term) {
+    clearHighlights();
+    if (term == null || term.isEmpty()) return;
+
+    Highlighter hl = area.getHighlighter();
+    Highlighter.HighlightPainter painter =
+        new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 255, 0, 128));
+
+    String text = area.getText();
+    String hay = text.toLowerCase();
+    String needle = term.toLowerCase();
+
+    int index = 0;
+    while (true) {
+      index = hay.indexOf(needle, index);
+      if (index < 0) break;
+      try {
+        hl.addHighlight(index, index + term.length(), painter);
+      } catch (BadLocationException ignored) { }
+      index += term.length();
     }
     
     @Override
