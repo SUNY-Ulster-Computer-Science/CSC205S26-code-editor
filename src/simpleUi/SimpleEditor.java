@@ -87,6 +87,7 @@ public final class SimpleEditor extends AbstractEditor {
 	   
 	// 1. Create the Menu Bar
 	    menuBar = new JMenuBar();
+	    JMenuBar menuBar = new JMenuBar();
 
 	    // 2. Create a Menu (e.g., File)
 	    JMenu fileMenu = new JMenu("File");
@@ -125,6 +126,7 @@ public final class SimpleEditor extends AbstractEditor {
         lightModeItem.addActionListener(e -> applyLightMode());
         darkModeItem.addActionListener(e -> applyDarkMode());
 
+
 	    // 5. Add menu to the bar, and bar to the frame
 	    menuBar.add(fileMenu);
 	    menuBar.add(editMenu);
@@ -134,6 +136,7 @@ public final class SimpleEditor extends AbstractEditor {
 	    frame.setJMenuBar(menuBar);
 	    
 	    
+	    frame.setJMenuBar(menuBar);
 
 	    
 	    JMenuItem helpItem = new JMenuItem("Help");
@@ -153,6 +156,7 @@ public final class SimpleEditor extends AbstractEditor {
 	    });
 
 	    helpMenu.add(helpItem);
+	    menuBar.add(helpMenu);
 	    
 	    // 6. Add logic to the items (optional but recommended)
 	    exitItem.addActionListener(e -> System.exit(0));
