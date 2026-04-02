@@ -24,7 +24,19 @@ public final class SimpleEditor extends AbstractEditor {
   
   private JMenuBar menuBar;
   //for menu
-  
+  private JMenuItem newItem;
+  private JMenuItem openItem;
+  private JMenuItem saveItem;
+
+  private JMenuItem undoItem;
+  private JMenuItem redoItem;
+  private JMenuItem clearItem;
+
+  private JMenuItem findItem;
+  private JMenuItem replaceItem;
+  private JMenuItem highlightItem;
+
+  private JMenuItem syntaxItem;
 
     public SimpleEditor(String title) {
         frame = new JFrame(title);
@@ -43,7 +55,7 @@ public final class SimpleEditor extends AbstractEditor {
         textPane.setEditorKit(new StyledEditorKit());
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1300, 800);
+        frame.setSize(1920, 1080);
         
         JScrollPane scrollPane = new JScrollPane(textPane);
         
@@ -90,31 +102,41 @@ public final class SimpleEditor extends AbstractEditor {
         JMenu settingsMenu = new JMenu("Settings");
 
 	    // 3. Create Menu Items
-	    JMenuItem newItem = new JMenuItem("New");
-	    JMenuItem openItem = new JMenuItem("Open");
-	    JMenuItem saveItem = new JMenuItem("Save");
-	    JMenuItem exitItem = new JMenuItem("Exit");
+        newItem = new JMenuItem("New");
+        openItem = new JMenuItem("Open");
+        saveItem = new JMenuItem("Save");
+        JMenuItem exitItem = new JMenuItem("Exit");
 
 	    // 4. Add items to the file menu
-	    fileMenu.add(newItem);
-	    fileMenu.add(saveItem);
-	    fileMenu.add(openItem);
-	    fileMenu.addSeparator(); // Adds a visual line
-	    fileMenu.add(exitItem);
-	    
-	    editMenu.add(new JMenuItem("Undo"));
-        editMenu.add(new JMenuItem("Redo"));
-        editMenu.add(new JMenuItem("Clear"));
+        fileMenu.add(newItem);
+        fileMenu.add(saveItem);
+        fileMenu.add(openItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
         
-        searchMenu.add(new JMenuItem("Find"));
-        searchMenu.add(new JMenuItem("Replace"));
-        searchMenu.add(new JMenuItem("Highlight Matches"));
+        undoItem = new JMenuItem("Undo");
+        redoItem = new JMenuItem("Redo");
+        clearItem = new JMenuItem("Clear");
+
+        editMenu.add(undoItem);
+        editMenu.add(redoItem);
+        editMenu.add(clearItem);
+
+        findItem = new JMenuItem("Find");
+        replaceItem = new JMenuItem("Replace (Case sensitive)");
+        highlightItem = new JMenuItem("Highlight Matches");
+
+        searchMenu.add(findItem);
+        searchMenu.add(replaceItem);
+        searchMenu.add(highlightItem);
         
         JMenuItem lightModeItem = new JMenuItem("Light Mode");
         JMenuItem darkModeItem = new JMenuItem("Dark Mode");
-        
+        syntaxItem = new JMenuItem("Toggle Syntax Highlighting");
+
         settingsMenu.add(lightModeItem);
         settingsMenu.add(darkModeItem);
+        settingsMenu.add(syntaxItem);
         
         lightModeItem.addActionListener(e -> applyLightMode());
         darkModeItem.addActionListener(e -> applyDarkMode());
@@ -157,7 +179,7 @@ public final class SimpleEditor extends AbstractEditor {
 	    Color bg = new Color(30, 30, 30);
 	    Color panelBg = new Color(45, 45, 45);
 	    Color textBg = new Color(35, 35, 35);
-	    Color fg = new Color(230, 230, 230);
+	    Color fg = new Color(200, 200, 200);
 
 	    textPane.setBackground(textBg);
 	    textPane.setForeground(fg);
@@ -296,4 +318,18 @@ public final class SimpleEditor extends AbstractEditor {
   public JTextPane getTextPane() {
       return textPane;
   }
+  
+  public JMenuItem getNewItem() { return newItem; }
+  public JMenuItem getOpenItem() { return openItem; }
+  public JMenuItem getSaveItem() { return saveItem; }
+
+  public JMenuItem getUndoItem() { return undoItem; }
+  public JMenuItem getRedoItem() { return redoItem; }
+  public JMenuItem getClearItem() { return clearItem; }
+
+  public JMenuItem getFindItem() { return findItem; }
+  public JMenuItem getReplaceItem() { return replaceItem; }
+  public JMenuItem getHighlightItem() { return highlightItem; }
+
+  public JMenuItem getSyntaxItem() { return syntaxItem; }
 }
