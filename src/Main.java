@@ -87,7 +87,9 @@ public class Main {
         // REPLACE BUTTON
         ui.addButton("Replace (Case sensitive)", () -> {
             String find = ui.prompt("Text to find:");
+            if (find == null) return;
             String replace = ui.prompt("Replace with:");
+            if (replace == null) return;
 
             String oldText = ui.getText();
 
@@ -328,14 +330,15 @@ public class Main {
     ui.addButton("Save File", () -> {
 
         javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-        chooser.setDialogTitle("Save .txt file");
+        chooser.setDialogTitle("Save .txt or .java file");
         //set to files only
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override public boolean accept(java.io.File f) {
-                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") ||
+                f.getName().toLowerCase().endsWith(".java");
             }
             @Override public String getDescription() {
                 return "Text files (*.txt)";
@@ -389,6 +392,159 @@ public class Main {
 
     ));
 
+    ui.getNewItem().addActionListener(e -> ui.setText(""));
+
+    ui.getOpenItem().addActionListener(e -> {
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setDialogTitle("Open .txt file (or java tbd)");
+        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override public boolean accept(java.io.File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") ||
+                       f.getName().toLowerCase().endsWith(".java");
+            }
+            @Override public String getDescription() {
+                return "Text files (*.txt, *.java)";
+            }
+        });
+
+        int result = chooser.showOpenDialog(null);
+        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File file = chooser.getSelectedFile();
+        if (file == null) return;
+
+        String oldText = ui.getText();
+        undoStack.push(oldText);
+        while (!redoStack.isEmpty()) redoStack.pop();
+
+        try {
+            String fileContent = java.nio.file.Files.readString(file.toPath());
+            ui.setText(fileContent);
+        } catch (Exception ex) {
+            ui.alert("Error loading file: \n" + ex.getMessage());
+            undoStack.pop();
+        }
+    });
+
+    ui.getSaveItem().addActionListener(e -> {
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setDialogTitle("Save .txt or .java file");
+        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override public boolean accept(java.io.File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") ||
+                       f.getName().toLowerCase().endsWith(".java");
+            }
+            @Override public String getDescription() {
+                return "Text files (*.txt, *.java)";
+            }
+        });
+
+        int result = chooser.showSaveDialog(null);
+        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File file = chooser.getSelectedFile();
+        if (file == null) return;
+
+        String path = file.getAbsolutePath();
+        if (!path.toLowerCase().endsWith(".txt") && !path.toLowerCase().endsWith(".java")) {
+            file = new java.io.File(path + ".txt");
+        }
+
+        try {
+            java.nio.file.Files.writeString(file.toPath(), ui.getText());
+            ui.alert("File saved: \n" + file.getAbsolutePath());
+        } catch (Exception ex) {
+            ui.alert("Error saving file:\n" + ex.getMessage());
+        }
+    });
+
+    ui.getUndoItem().addActionListener(e -> {
+        if (undoStack.isEmpty()) return;
+
+        String current = ui.getText();
+        redoStack.push(current);
+
+        String prev = undoStack.pop();
+        ui.setText(prev);
+    });
+
+    ui.getRedoItem().addActionListener(e -> {
+        if (redoStack.isEmpty()) return;
+
+        String current = ui.getText();
+        undoStack.push(current);
+
+        String restored = redoStack.pop();
+        ui.setText(restored);
+    });
+
+    ui.getClearItem().addActionListener(e -> {
+        String current = ui.getText();
+        undoStack.push(current);
+        while (!redoStack.isEmpty()) redoStack.pop();
+        ui.setText("");
+    });
+
+    ui.getFindItem().addActionListener(e -> {
+        String term = ui.prompt("Highlight what word/phrase?");
+        if (term == null) return;
+
+        term = term.trim();
+        if (term.isEmpty()) {
+            ui.alert("Nothing to highlight.");
+            return;
+        }
+        ui.highlight(term);
+    });
+
+    ui.getReplaceItem().addActionListener(e -> {
+        String find = ui.prompt("Text to find:");
+        if (find == null) return;
+        String replace = ui.prompt("Replace with:");
+        if (replace == null) return;
+        
+        String oldText = ui.getText();
+        undoStack.push(oldText);
+        while (!redoStack.isEmpty()) redoStack.pop();
+
+        String newText = oldText.replace(find, replace);
+        ui.setText(newText);
+    });
+
+    ui.getHighlightItem().addActionListener(e -> {
+        String term = ui.prompt("Highlight what word/phrase?");
+        if (term == null) return;
+
+        term = term.trim();
+        if (term.isEmpty()) {
+            ui.alert("Nothing to highlight.");
+            return;
+        }
+        ui.highlight(term);
+    });
+
+    ui.getSyntaxItem().addActionListener(e -> {
+        if (syntaxManager == null) {
+            syntaxManager = new SyntaxHighlighterManager(ui);
+            syntaxManager.enable();
+            ui.alert("Syntax highlighting enabled!\nJava keywords, strings, comments, and numbers will be color-coded.");
+        } else {
+            if (syntaxManager.isEnabled()) {
+                syntaxManager.disable();
+                ui.alert("Syntax highlighting disabled!");
+            } else {
+                syntaxManager.enable();
+                ui.alert("Syntax highlighting enabled!");
+            }
+        }
+    });
+    
     ui.show();
   }
 
