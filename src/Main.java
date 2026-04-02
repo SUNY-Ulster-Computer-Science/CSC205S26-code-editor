@@ -308,61 +308,49 @@ public class Main {
                 undoStack.pop();
             }
         });
-        
-        // SAVE FILE BUTTON
-        ui.addButton("Save File", () -> {
-            javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-            chooser.setDialogTitle("Save .txt file");
-            chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+    
+    ui.addButton("Save File", () -> {
 
-            chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                @Override public boolean accept(java.io.File f) {
-                    return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
-                }
-                @Override public String getDescription() {
-                    return "Text files (*.txt)";
-                }
-            });
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setDialogTitle("Save .txt file");
+        //set to files only
+        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
-            int result = chooser.showSaveDialog(null);
-            if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
-
-            java.io.File file = chooser.getSelectedFile();
-            if (file == null) return;
-
-            String path = file.getAbsolutePath();
-            if (!path.toLowerCase().endsWith(".txt")) {
-                file = new java.io.File(path + ".txt");
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override public boolean accept(java.io.File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
             }
-
-            try {
-                java.nio.file.Files.writeString(file.toPath(), ui.getText());
-                ui.alert("File saved: \n" + file.getAbsolutePath());
-            } catch (Exception e) {
-                ui.alert("Error saving file:\n" + e.getMessage());
+            @Override public String getDescription() {
+                return "Text files (*.txt)";
             }
         });
 
-        // LOAD DEMO BUTTON
-        ui.addButton("Load Demo", () -> ui.setText(
-            "public class Example {\n" +
-            "    // This is a comment\n" +
-            "    public static void main(String[] args) {\n" +
-            "        String message = \"Hello, World!\";\n" +
-            "        int number = 42;\n" +
-            "        System.out.println(message);\n" +
-            "        \n" +
-            "        // Loop example\n" +
-            "        for (int i = 0; i < 10; i++) {\n" +
-            "            System.out.println(\"Count: \" + i);\n" +
-            "        }\n" +
-            "        \n" +
-            "        @Deprecated\n" +
-            "        System.out.println(\"Number: \" + number);\n" +
-            "    }\n" +
-            "}\n\n" +
-            "If you’re going to try, go all the way.\n" +
+        int result = chooser.showSaveDialog(null);
+        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File file = chooser.getSelectedFile();
+        if (file == null) return;
+
+        // Force .txt extension
+        String path = file.getAbsolutePath();
+        if (!path.toLowerCase().endsWith(".txt")) {
+            file = new java.io.File(path + ".txt");
+            //normalize and ensure file is saved as .txt
+        }
+
+        try {
+            java.nio.file.Files.writeString(file.toPath(), ui.getText());
+            ui.alert("File saved: \n" + file.getAbsolutePath());
+            //shows file directory
+        } catch (Exception e) {
+            ui.alert("Error saving file:\n" + e.getMessage());
+        }
+    });
+
+    // Load demo text for testing.
+    ui.addButton("Load Demo", () -> ui.setText(
+        "If you’re going to try, go all the way.\n" +
             "Otherwise, don’t even start.\n" +
             "If you're going to try, go all the way.\n" +
             "This could mean losing girlfriends, wives, relatives, jobs and maybe even your mind.\n" +
@@ -380,25 +368,10 @@ public class Main {
             "DO IT. DO IT. DO IT. All the way\n" +
             "You will ride life straight to perfect laughter. It’s the only good fight there is.\n\n" +
             "– Charles Bukowski"
-        ));
-        
-        // SYNTAX HIGHLIGHTING TOGGLE BUTTON - Update this part
-        ui.addButton("Toggle Syntax Highlighting", () -> {
-            if (syntaxManager == null) {
-                syntaxManager = new SyntaxHighlighterManager(ui);
-                syntaxManager.enable();
-                ui.alert("Syntax highlighting enabled!\nJava keywords, strings, comments, and numbers will be color-coded.");
-            } else {
-                if (syntaxManager.isEnabled()) {
-                    syntaxManager.disable();
-                    ui.alert("Syntax highlighting disabled!");
-                } else {
-                    syntaxManager.enable();
-                    ui.alert("Syntax highlighting enabled!");
-                }
-            }
-        });
-        
-        ui.show();
-    }
+
+    ));
+
+    ui.show();
+  }
+
 }
