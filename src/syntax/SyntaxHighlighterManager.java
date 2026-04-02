@@ -1,4 +1,4 @@
-package Syntax;
+package syntax;
 
 import simpleUi.SimpleEditor;
 import javax.swing.JTextPane;
@@ -59,4 +59,5 @@ public class SyntaxHighlighterManager {
     public boolean isEnabled() {
         return highlighter != null && highlighter.isEnabled();
     }
+   
 }
