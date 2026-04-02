@@ -1,279 +1,335 @@
-package syntax;
+package simpleUi;
 
-import java.awt.Color;
-import java.util.*;
-import java.util.regex.*;
+import java.awt.*;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.text.*;
 import javax.swing.event.*;
 
-/**
- * Syntax highlighter that changes text color (not background)
- * Works with JTextPane and StyledDocument
+
+//ui improvements needed, drop down menu
+
+/*
+ * Concrete implementation of the Editor interface, 
+ * provides a basic text editor UI
+ * provides a basic text editor UI with JTextPane support
  */
-public class JavaSyntaxHighlighterTextColor {
-    
-    private final JTextPane textPane;
-    private final StyledDocument document;
-    private final StyleContext styleContext;
-    private final Timer highlightTimer;
-    private boolean enabled = true;
-    
-    // Style names
-    private static final String STYLE_KEYWORD = "keyword";
-    private static final String STYLE_STRING = "string";
-    private static final String STYLE_COMMENT = "comment";
-    private static final String STYLE_NUMBER = "number";
-    private static final String STYLE_ANNOTATION = "annotation";
-    private static final String STYLE_DEFAULT = "default";
-    
-    // Colors for text
-    private static final Color KEYWORD_COLOR = new Color(0, 0, 255);      // Blue
-    private static final Color STRING_COLOR = new Color(0, 128, 0);       // Green
-    private static final Color COMMENT_COLOR = new Color(128, 128, 128);  // Gray
-    private static final Color NUMBER_COLOR = new Color(0, 0, 205);       // Dark Blue
-    private static final Color ANNOTATION_COLOR = new Color(100, 100, 100); // Dark Gray
-    private static final Color DEFAULT_COLOR = Color.BLACK;
-    
-    // Java keywords
-    private static final Set<String> KEYWORDS = new HashSet<>(Arrays.asList(
-        "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
-        "class", "const", "continue", "default", "do", "double", "else", "enum",
-        "extends", "final", "finally", "float", "for", "goto", "if", "implements",
-        "import", "instanceof", "int", "interface", "long", "native", "new",
-        "package", "private", "protected", "public", "return", "short", "static",
-        "strictfp", "super", "switch", "synchronized", "this", "throw", "throws",
-        "transient", "try", "void", "volatile", "while", "true", "false", "null"
-    ));
-    
-    /**
-     * Constructor - creates a syntax highlighter for a JTextPane
-     * @param textPane The text pane to highlight
-     */
-    public JavaSyntaxHighlighterTextColor(JTextPane textPane) {
-        this.textPane = textPane;
-        this.document = textPane.getStyledDocument();
-        this.styleContext = new StyleContext();
-        this.highlightTimer = new Timer(300, e -> highlight());
-        this.highlightTimer.setRepeats(false);
-        
-        setupStyles();
-        
-        if (textPane != null) {
-            // Add document listener to trigger highlighting on text changes
-            document.addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) { scheduleHighlight(); }
-                @Override
-                public void removeUpdate(DocumentEvent e) { scheduleHighlight(); }
-                @Override
-                public void changedUpdate(DocumentEvent e) { scheduleHighlight(); }
-            });
-            
-            // Initial highlight
-            highlight();
-        }
+public final class SimpleEditor extends AbstractEditor {
+/*represents new window display*/
+  private final JFrame frame;
+  /*represents text - now using JTextPane for styling*/
+  private final JTextPane textPane;
+/*represents area for buttons*/
+  private final JPanel buttonRow;
+  
+  
+  private JMenuBar menuBar;
+  //for menu
+  private JMenuItem newItem;
+  private JMenuItem openItem;
+  private JMenuItem saveItem;
+
+  private JMenuItem undoItem;
+  private JMenuItem redoItem;
+  private JMenuItem clearItem;
+
+  private JMenuItem findItem;
+  private JMenuItem replaceItem;
+  private JMenuItem highlightItem;
+
+  private JMenuItem syntaxItem;
+
+    public SimpleEditor(String title) {
+        frame = new JFrame(title);
+        textPane = new JTextPane();
+        buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        init();
     }
     
-    /**
-     * Set up the styles for different syntax elements
+    /*
+     * Builds frame to display content in text editor
+     * @param none
+     * @return none
      */
-    private void setupStyles() {
-        // Keyword style - bold blue
-        Style keywordStyle = styleContext.addStyle(STYLE_KEYWORD, null);
-        StyleConstants.setForeground(keywordStyle, KEYWORD_COLOR);
-        StyleConstants.setBold(keywordStyle, true);
+    private void init() {
+        // Enable line wrapping for JTextPane
+        textPane.setEditorKit(new StyledEditorKit());
         
-        // String style - green
-        Style stringStyle = styleContext.addStyle(STYLE_STRING, null);
-        StyleConstants.setForeground(stringStyle, STRING_COLOR);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(1920, 1080);
         
-        // Comment style - gray italic
-        Style commentStyle = styleContext.addStyle(STYLE_COMMENT, null);
-        StyleConstants.setForeground(commentStyle, COMMENT_COLOR);
-        StyleConstants.setItalic(commentStyle, true);
+        JScrollPane scrollPane = new JScrollPane(textPane);
         
-        // Number style - dark blue
-        Style numberStyle = styleContext.addStyle(STYLE_NUMBER, null);
-        StyleConstants.setForeground(numberStyle, NUMBER_COLOR);
+        // Add line numbers
+        JTextArea lines = new JTextArea("1");
+        lines.setBackground(Color.LIGHT_GRAY);
+        lines.setEditable(false);
+        lines.setFocusable(false);
+        lines.setFont(textPane.getFont());
         
-        // Annotation style - dark gray
-        Style annotationStyle = styleContext.addStyle(STYLE_ANNOTATION, null);
-        StyleConstants.setForeground(annotationStyle, ANNOTATION_COLOR);
-        
-        // Default style - black
-        Style defaultStyle = styleContext.addStyle(STYLE_DEFAULT, null);
-        StyleConstants.setForeground(defaultStyle, DEFAULT_COLOR);
-    }
-    
-    /**
-     * Schedule highlighting after a short delay (for performance)
-     */
-    private void scheduleHighlight() {
-        if (enabled) {
-            if (highlightTimer.isRunning()) {
-                highlightTimer.restart();
-            } else {
-                highlightTimer.start();
+        textPane.getDocument().addDocumentListener(new DocumentListener() {
+            private String getNumbers() {
+                int lineposition = textPane.getDocument().getLength();
+                Element root = textPane.getDocument().getDefaultRootElement();
+                StringBuilder sb = new StringBuilder("1");
+                for (int i = 2; i <= root.getElementIndex(lineposition) + 1; i++) {
+                    sb.append(System.lineSeparator()).append(i);
+                }
+                return sb.toString();
             }
-        }
-    }
+        public void changedUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        public void insertUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        public void removeUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+    });
+
+    scrollPane.setRowHeaderView(lines);
+
+    JPanel content1 = new JPanel(new BorderLayout(10, 5));
+    content1.add(scrollPane, BorderLayout.CENTER); // Use the scrollPane here
+    content1.add(buttonRow, BorderLayout.SOUTH);
+
+    frame.setContentPane(content1);
     
-    /**
-     * Perform the syntax highlighting
-     */
-    private void highlight() {
-        if (!enabled || textPane == null) return;
+    //adding drop down menu
+	   
+	// 1. Create the Menu Bar
+	    menuBar = new JMenuBar();
+
+	    // 2. Create a Menu (e.g., File)
+	    JMenu fileMenu = new JMenu("File");
+	    JMenu editMenu = new JMenu("Edit");
+        JMenu searchMenu = new JMenu("Search");
+        JMenu helpMenu = new JMenu("Info");
+        JMenu settingsMenu = new JMenu("Settings");
+
+	    // 3. Create Menu Items
+        newItem = new JMenuItem("New");
+        openItem = new JMenuItem("Open");
+        saveItem = new JMenuItem("Save");
+        JMenuItem exitItem = new JMenuItem("Exit");
+
+	    // 4. Add items to the file menu
+        fileMenu.add(newItem);
+        fileMenu.add(saveItem);
+        fileMenu.add(openItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
         
-        SwingUtilities.invokeLater(() -> {
-            try {
-                String text = document.getText(0, document.getLength());
-                
-                // Reset to default style first
-                document.setCharacterAttributes(0, text.length(), 
-                    styleContext.getStyle(STYLE_DEFAULT), true);
-                
-                // Apply different syntax highlighting
-                highlightKeywords(text);
-                highlightStrings(text);
-                highlightComments(text);
-                highlightNumbers(text);
-                highlightAnnotations(text);
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-    
-    /**
-     * Highlight Java keywords
-     */
-    private void highlightKeywords(String text) {
-        for (String keyword : KEYWORDS) {
-            Pattern pattern = Pattern.compile("\\b" + keyword + "\\b");
-            Matcher matcher = pattern.matcher(text);
-            
-            while (matcher.find()) {
-                applyStyle(matcher.start(), matcher.end(), STYLE_KEYWORD);
-            }
-        }
-    }
-    
-    /**
-     * Highlight strings (text between quotes)
-     */
-    private void highlightStrings(String text) {
-        Pattern pattern = Pattern.compile("\"([^\"\\\\]|\\\\.)*\"");
-        Matcher matcher = pattern.matcher(text);
+        undoItem = new JMenuItem("Undo");
+        redoItem = new JMenuItem("Redo");
+        clearItem = new JMenuItem("Clear");
+
+        editMenu.add(undoItem);
+        editMenu.add(redoItem);
+        editMenu.add(clearItem);
+
+        findItem = new JMenuItem("Find");
+        replaceItem = new JMenuItem("Replace (Case sensitive)");
+        highlightItem = new JMenuItem("Highlight Matches");
+
+        searchMenu.add(findItem);
+        searchMenu.add(replaceItem);
+        searchMenu.add(highlightItem);
         
-        while (matcher.find()) {
-            applyStyle(matcher.start(), matcher.end(), STYLE_STRING);
-        }
-    }
-    
-    /**
-     * Highlight single-line and multi-line comments
-     */
-    private void highlightComments(String text) {
-        // Single line comments
-        Pattern singleLinePattern = Pattern.compile("//.*$", Pattern.MULTILINE);
-        Matcher singleLineMatcher = singleLinePattern.matcher(text);
+        JMenuItem lightModeItem = new JMenuItem("Light Mode");
+        JMenuItem darkModeItem = new JMenuItem("Dark Mode");
+        syntaxItem = new JMenuItem("Toggle Syntax Highlighting");
+
+        settingsMenu.add(lightModeItem);
+        settingsMenu.add(darkModeItem);
+        settingsMenu.add(syntaxItem);
         
-        while (singleLineMatcher.find()) {
-            applyStyle(singleLineMatcher.start(), singleLineMatcher.end(), STYLE_COMMENT);
-        }
-        
-        // Multi-line comments
-        Pattern multiLinePattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
-        Matcher multiLineMatcher = multiLinePattern.matcher(text);
-        
-        while (multiLineMatcher.find()) {
-            applyStyle(multiLineMatcher.start(), multiLineMatcher.end(), STYLE_COMMENT);
-        }
+        lightModeItem.addActionListener(e -> applyLightMode());
+        darkModeItem.addActionListener(e -> applyDarkMode());
+
+	    // 5. Add menu to the bar, and bar to the frame
+	    menuBar.add(fileMenu);
+	    menuBar.add(editMenu);
+        menuBar.add(searchMenu);
+        menuBar.add(helpMenu);
+        menuBar.add(settingsMenu);
+	    frame.setJMenuBar(menuBar);
+	    
+	    
+
+	    
+	    JMenuItem helpItem = new JMenuItem("Help");
+
+	    helpItem.addActionListener(e -> {
+	        JOptionPane.showMessageDialog(
+	            frame,
+	            "Welcome to the our Text Editor!\n\n"
+	          + "File:\nOpen and save text and java files.\n\n"
+	          + "Edit:\nUndo, redo, and clear text.\n\n"
+	          + "Search:\nFind words and replace text.\n\n"
+	          + "Use the buttons or menus to perform actions.\n\n"
+	          + "Brought to you by: Matthew Biegel, Robert Conti, \nMichael McGrath, Rui Li, Luke Padilla \n 2026",
+	          "Help",
+	            JOptionPane.INFORMATION_MESSAGE
+	        );
+	    });
+
+	    helpMenu.add(helpItem);
+	    
+	    // 6. Add logic to the items (optional but recommended)
+	    exitItem.addActionListener(e -> System.exit(0));
+	}
+ 
+   
+   private void applyDarkMode() {
+	    Color bg = new Color(30, 30, 30);
+	    Color panelBg = new Color(45, 45, 45);
+	    Color textBg = new Color(35, 35, 35);
+	    Color fg = new Color(200, 200, 200);
+
+	    textPane.setBackground(textBg);
+	    textPane.setForeground(fg);
+	    textPane.setCaretColor(Color.WHITE);
+	    textPane.setSelectionColor(new Color(80, 120, 180));
+	    textPane.setSelectedTextColor(Color.WHITE);
+
+	    buttonRow.setBackground(panelBg);
+
+	    if (menuBar != null) {
+	        menuBar.setBackground(panelBg);
+	        menuBar.setForeground(fg);
+	    }
+	    
+	    for (MenuElement menu : menuBar.getSubElements()) {
+	        if (menu.getComponent() instanceof JMenu) {
+	            JMenu m = (JMenu) menu.getComponent();
+	            m.setForeground(Color.WHITE);
+	        }
+	    }
+
+	  
+	    frame.repaint();
+	}
+   
+   
+   
+   private void applyLightMode() {
+	    Color bg = Color.WHITE;
+	    Color panelBg = new Color(240, 240, 240);
+	    Color textBg = Color.WHITE;
+	    Color fg = Color.BLACK;
+
+	    textPane.setBackground(textBg);
+	    textPane.setForeground(fg);
+	    textPane.setCaretColor(Color.BLACK);
+	    textPane.setSelectionColor(new Color(180, 200, 240));
+	    textPane.setSelectedTextColor(Color.BLACK);
+
+	    buttonRow.setBackground(panelBg);
+
+	    if (menuBar != null) {
+	        menuBar.setBackground(panelBg);
+	        menuBar.setForeground(fg);
+	    }
+
+	    for (MenuElement menu : menuBar.getSubElements()) {
+	        if (menu.getComponent() instanceof JMenu) {
+	            JMenu m = (JMenu) menu.getComponent();
+	            m.setForeground(Color.BLACK);
+	        }
+	    }
+
+
+	    frame.repaint();
+	    
+	    
+	}
+   
+  
+  @Override
+  protected void uiShow() {
+    SwingUtilities.invokeLater(() -> frame.setVisible(true));
+  }
+
+  @Override
+  protected String uiGetText() { return textPane.getText(); }
+
+  @Override
+  protected void uiSetText(String text) { textPane.setText(text); }
+
+  @Override
+  protected void uiClearText() { textPane.setText(""); clearHighlights(); }
+
+  @Override
+  protected void uiAddButton(String label, Runnable action) {
+    JButton b = new JButton(label);
+    b.addActionListener(e -> action.run());
+    buttonRow.add(b);
+    buttonRow.revalidate();
+    buttonRow.repaint();
+  }
+
+  @Override
+  protected void uiAlert(String message) {
+    JOptionPane.showMessageDialog(frame, message);
+  }
+
+  @Override
+  protected String uiPrompt(String message) {
+    return JOptionPane.showInputDialog(frame, message);
+  }
+
+  @Override
+  protected void uiHighlight(String term) {
+    clearHighlights();
+    if (term == null || term.isEmpty()) return;
+
+    Highlighter hl = textPane.getHighlighter();
+    Highlighter.HighlightPainter painter =
+        new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 255, 0, 128));
+
+    String text = textPane.getText();
+    String hay = text.toLowerCase();
+    String needle = term.toLowerCase();
+
+    int index = 0;
+    while (true) {
+      index = hay.indexOf(needle, index);
+      if (index < 0) break;
+      try {
+        hl.addHighlight(index, index + term.length(), painter);
+      } catch (BadLocationException ignored) { }
+      index += term.length();
     }
-    
-    /**
-     * Highlight numbers (integers, decimals, hex)
-     */
-    private void highlightNumbers(String text) {
-        // Integers and decimals
-        Pattern numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?\\b");
-        Matcher numberMatcher = numberPattern.matcher(text);
-        
-        while (numberMatcher.find()) {
-            applyStyle(numberMatcher.start(), numberMatcher.end(), STYLE_NUMBER);
-        }
-        
-        // Hex numbers
-        Pattern hexPattern = Pattern.compile("\\b0[xX][0-9a-fA-F]+\\b");
-        Matcher hexMatcher = hexPattern.matcher(text);
-        
-        while (hexMatcher.find()) {
-            applyStyle(hexMatcher.start(), hexMatcher.end(), STYLE_NUMBER);
-        }
-    }
-    
-    /**
-     * Highlight Java annotations (@Annotation)
-     */
-    private void highlightAnnotations(String text) {
-        Pattern pattern = Pattern.compile("@\\w+");
-        Matcher matcher = pattern.matcher(text);
-        
-        while (matcher.find()) {
-            applyStyle(matcher.start(), matcher.end(), STYLE_ANNOTATION);
-        }
-    }
-    
-    /**
-     * Apply a style to a range of text
-     */
-    private void applyStyle(int start, int end, String styleName) {
-        Style style = styleContext.getStyle(styleName);
-        if (style != null) {
-            document.setCharacterAttributes(start, end - start, style, false);
-        }
-    }
-    
-    /**
-     * Enable syntax highlighting
-     */
-    public void enable() {
-        enabled = true;
-        highlight();
-    }
-    
-    /**
-     * Disable syntax highlighting and reset to default style
-     */
-    public void disable() {
-        enabled = false;
-        try {
-            String text = document.getText(0, document.getLength());
-            document.setCharacterAttributes(0, text.length(), 
-                styleContext.getStyle(STYLE_DEFAULT), true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    /**
-     * Toggle syntax highlighting on/off
-     */
-    public void toggle() {
-        if (enabled) {
-            disable();
-        } else {
-            enable();
-        }
-    }
-    
-    /**
-     * Check if highlighting is enabled
-     */
-    public boolean isEnabled() {
-        return enabled;
-    }
+  }
+
+  @Override
+  protected void uiReplace(String target, String replacement) {
+    if (target == null || target.isEmpty()) return;
+    String current = textPane.getText();
+    String updated = current.replace(target, replacement == null ? "" : replacement);
+    textPane.setText(updated);
+    clearHighlights();
+  }
+
+  /*
+   * Removes highlights from display
+   * @param none
+   * @return none 
+   */
+  private void clearHighlights() {
+	  textPane.getHighlighter().removeAllHighlights();
+  }
+  // Getter for syntax highlighting
+  public JTextPane getTextPane() {
+      return textPane;
+  }
+  
+  public JMenuItem getNewItem() { return newItem; }
+  public JMenuItem getOpenItem() { return openItem; }
+  public JMenuItem getSaveItem() { return saveItem; }
+
+  public JMenuItem getUndoItem() { return undoItem; }
+  public JMenuItem getRedoItem() { return redoItem; }
+  public JMenuItem getClearItem() { return clearItem; }
+
+  public JMenuItem getFindItem() { return findItem; }
+  public JMenuItem getReplaceItem() { return replaceItem; }
+  public JMenuItem getHighlightItem() { return highlightItem; }
+
+  public JMenuItem getSyntaxItem() { return syntaxItem; }
 }
