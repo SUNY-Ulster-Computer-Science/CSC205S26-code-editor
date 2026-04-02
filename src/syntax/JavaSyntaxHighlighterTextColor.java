@@ -34,8 +34,7 @@ public class JavaSyntaxHighlighterTextColor {
     private static final Color COMMENT_COLOR = new Color(128, 128, 128);  // Gray
     private static final Color NUMBER_COLOR = new Color(0, 0, 205);       // Dark Blue
     private static final Color ANNOTATION_COLOR = new Color(100, 100, 100); // Dark Gray
-    private static Color defaultColor = Color.BLACK; //allows dark and light mode change
-    
+     
     // Java keywords
     private static final Set<String> KEYWORDS = new HashSet<>(Arrays.asList(
         "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
@@ -104,7 +103,7 @@ public class JavaSyntaxHighlighterTextColor {
         
         // Default style - black
         Style defaultStyle = styleContext.addStyle(STYLE_DEFAULT, null);
-        StyleConstants.setForeground(defaultStyle, defaultColor);
+        StyleConstants.setForeground(defaultStyle, textPane.getForeground());
     }
     
     /**
@@ -130,9 +129,12 @@ public class JavaSyntaxHighlighterTextColor {
             try {
                 String text = document.getText(0, document.getLength());
                 
+                Style defaultStyle = styleContext.getStyle(STYLE_DEFAULT);
+                StyleConstants.setForeground(defaultStyle, textPane.getForeground());
                 // Reset to default style first
                 document.setCharacterAttributes(0, text.length(), 
                     styleContext.getStyle(STYLE_DEFAULT), true);
+                
                 
                 // Apply different syntax highlighting
                 highlightKeywords(text);
@@ -251,9 +253,13 @@ public class JavaSyntaxHighlighterTextColor {
     public void disable() {
         enabled = false;
         try {
-            String text = document.getText(0, document.getLength());
-            document.setCharacterAttributes(0, text.length(), 
-                styleContext.getStyle(STYLE_DEFAULT), true);
+        	String text = document.getText(0, document.getLength());
+
+        	Style defaultStyle = styleContext.getStyle(STYLE_DEFAULT);
+        	StyleConstants.setForeground(defaultStyle, textPane.getForeground());
+
+        	document.setCharacterAttributes(0, text.length(),
+        	    defaultStyle, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -277,16 +283,4 @@ public class JavaSyntaxHighlighterTextColor {
         return enabled;
     }
     
-    public void setDefaultColor(Color color) {
-        defaultColor = color;
-
-        Style defaultStyle = styleContext.getStyle(STYLE_DEFAULT);
-        if (defaultStyle != null) {
-            StyleConstants.setForeground(defaultStyle, defaultColor);
-        }
-
-        if (enabled) {
-            highlight();
-        }
-    }
 }
