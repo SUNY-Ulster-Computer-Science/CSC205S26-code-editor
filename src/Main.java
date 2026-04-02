@@ -315,6 +315,8 @@ public class Main {
             if (syntaxManager == null) {
                 syntaxManager = new SyntaxHighlighterManager(ui);
                 syntaxManager.enable();
+                
+                
                 ui.alert("Syntax highlighting enabled!\nJava keywords, strings, comments, and numbers will be color-coded.");
             } else {
                 if (syntaxManager.isEnabled()) {
@@ -366,6 +368,8 @@ public class Main {
             ui.alert("Error saving file:\n" + e.getMessage());
         }
     });
+    
+    
     
     
 
@@ -532,13 +536,17 @@ public class Main {
     ui.getSyntaxItem().addActionListener(e -> {
         if (syntaxManager == null) {
             syntaxManager = new SyntaxHighlighterManager(ui);
+
             syntaxManager.enable();
+
             ui.alert("Syntax highlighting enabled!\nJava keywords, strings, comments, and numbers will be color-coded.");
         } else {
             if (syntaxManager.isEnabled()) {
                 syntaxManager.disable();
                 ui.alert("Syntax highlighting disabled!");
             } else {
+
+
                 syntaxManager.enable();
                 ui.alert("Syntax highlighting enabled!");
             }
