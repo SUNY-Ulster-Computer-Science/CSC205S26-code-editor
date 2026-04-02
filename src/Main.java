@@ -276,7 +276,7 @@ public class Main {
         // LOAD FILE BUTTON
         ui.addButton("Load File", () -> {
             javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-            chooser.setDialogTitle("Open .txt file (or java tbd)");
+            chooser.setDialogTitle("Open .txt file or .java");
             chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
             chooser.setAcceptAllFileFilterUsed(false);
@@ -328,14 +328,15 @@ public class Main {
     ui.addButton("Save File", () -> {
 
         javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-        chooser.setDialogTitle("Save .txt file");
+        chooser.setDialogTitle("Save .txt or .java file");
         //set to files only
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override public boolean accept(java.io.File f) {
-                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt")||
+                f.getName().toLowerCase().endsWith(".java");
             }
             @Override public String getDescription() {
                 return "Text files (*.txt)";
