@@ -59,4 +59,5 @@ public class SyntaxHighlighterManager {
     public boolean isEnabled() {
         return highlighter != null && highlighter.isEnabled();
     }
+   
 }
