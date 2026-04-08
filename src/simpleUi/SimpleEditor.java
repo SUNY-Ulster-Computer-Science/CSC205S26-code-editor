@@ -3,40 +3,55 @@ package simpleUi;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.text.*;
+
+import compiler.CompleteJavaRunner;
+import compiler.MemoryJavaFileManager;
+import compiler.JavaCompilerAPI;
+import compiler.RunResult;
+import compiler.MemoryClassLoader;
+import compiler.CompilationResult;
+import compiler.CompilationError;
+import compiler.InMemoryJavaFileObject;
 import javax.swing.event.*;
-
-
-//ui improvements needed, drop down menu
+import java.io.*;
 
 /*
  * Concrete implementation of the Editor interface, 
- * provides a basic text editor UI
  * provides a basic text editor UI with JTextPane support
+ * and Java code compilation/running capabilities
  */
 public final class SimpleEditor extends AbstractEditor {
-/*represents new window display*/
-  private final JFrame frame;
-  /*represents text - now using JTextPane for styling*/
-  private final JTextPane textPane;
-/*represents area for buttons*/
-  private final JPanel buttonRow;
-  
-  
-  private JMenuBar menuBar;
-  //for menu
-  private JMenuItem newItem;
-  private JMenuItem openItem;
-  private JMenuItem saveItem;
+    /*represents new window display*/
+    private final JFrame frame;
+    /*represents text - now using JTextPane for styling*/
+    private final JTextPane textPane;
+    /*represents area for buttons*/
+    private final JPanel buttonRow;
+    
+    private JMenuBar menuBar;
+    //for menu
+    private JMenuItem newItem;
+    private JMenuItem openItem;
+    private JMenuItem saveItem;
+    private JMenuItem runItem;  // Added Run menu item
+    private JMenuItem compileItem; // Added Compile menu item
 
-  private JMenuItem undoItem;
-  private JMenuItem redoItem;
-  private JMenuItem clearItem;
+    private JMenuItem undoItem;
+    private JMenuItem redoItem;
+    private JMenuItem clearItem;
 
-  private JMenuItem findItem;
-  private JMenuItem replaceItem;
-  private JMenuItem highlightItem;
+    private JMenuItem findItem;
+    private JMenuItem replaceItem;
+    private JMenuItem highlightItem;
 
-  private JMenuItem syntaxItem;
+    private JMenuItem syntaxItem;
+    
+    // Output console area
+    private JTextArea consoleArea;
+    private JTabbedPane tabbedPane;
+    
+    // Status bar
+    private JLabel statusBar;
 
     public SimpleEditor(String title) {
         frame = new JFrame(title);
@@ -47,16 +62,19 @@ public final class SimpleEditor extends AbstractEditor {
     
     /*
      * Builds frame to display content in text editor
-     * @param none
-     * @return none
      */
     private void init() {
         // Enable line wrapping for JTextPane
         textPane.setEditorKit(new StyledEditorKit());
+        textPane.setFont(new Font("Monospaced", Font.PLAIN, 14));
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1920, 1080);
+        frame.setSize(1200, 800);
         
+        // Create tabbed pane for editor and console
+        tabbedPane = new JTabbedPane();
+        
+        // Editor panel with line numbers
         JScrollPane scrollPane = new JScrollPane(textPane);
         
         // Add line numbers
@@ -76,44 +94,62 @@ public final class SimpleEditor extends AbstractEditor {
                 }
                 return sb.toString();
             }
-        public void changedUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
-        public void insertUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
-        public void removeUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
-    });
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { lines.setText(getNumbers()); }
+        });
 
-    scrollPane.setRowHeaderView(lines);
+        scrollPane.setRowHeaderView(lines);
+        
+        // Console area for output
+        consoleArea = new JTextArea();
+        consoleArea.setEditable(false);
+        consoleArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        consoleArea.setBackground(Color.BLACK);
+        consoleArea.setForeground(Color.GREEN);
+        JScrollPane consoleScroll = new JScrollPane(consoleArea);
+        consoleScroll.setPreferredSize(new Dimension(800, 200));
+        
+        // Add tabs
+        tabbedPane.addTab("Editor", scrollPane);
+        tabbedPane.addTab("Console", consoleScroll);
+        
+        // Status bar
+        statusBar = new JLabel(" Ready");
+        statusBar.setBorder(BorderFactory.createEtchedBorder());
+        
+        JPanel content1 = new JPanel(new BorderLayout(10, 5));
+        content1.add(tabbedPane, BorderLayout.CENTER);
+        content1.add(buttonRow, BorderLayout.SOUTH);
+        content1.add(statusBar, BorderLayout.NORTH);
 
-    JPanel content1 = new JPanel(new BorderLayout(10, 5));
-    content1.add(scrollPane, BorderLayout.CENTER); // Use the scrollPane here
-    content1.add(buttonRow, BorderLayout.SOUTH);
-
-    frame.setContentPane(content1);
+        frame.setContentPane(content1);
+        
+        // Create menu bar
+        createMenuBar();
+        
+        // Add action buttons
+        setupButtons();
+    }
     
-    //adding drop down menu
-	   
-	// 1. Create the Menu Bar
-	    menuBar = new JMenuBar();
+    private void createMenuBar() {
+        menuBar = new JMenuBar();
 
-	    // 2. Create a Menu (e.g., File)
-	    JMenu fileMenu = new JMenu("File");
-	    JMenu editMenu = new JMenu("Edit");
-        JMenu searchMenu = new JMenu("Search");
-        JMenu helpMenu = new JMenu("Info");
-        JMenu settingsMenu = new JMenu("Settings");
-
-	    // 3. Create Menu Items
+        // File Menu
+        JMenu fileMenu = new JMenu("File");
         newItem = new JMenuItem("New");
         openItem = new JMenuItem("Open");
         saveItem = new JMenuItem("Save");
         JMenuItem exitItem = new JMenuItem("Exit");
 
-	    // 4. Add items to the file menu
         fileMenu.add(newItem);
         fileMenu.add(saveItem);
         fileMenu.add(openItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
         
+        // Edit Menu
+        JMenu editMenu = new JMenu("Edit");
         undoItem = new JMenuItem("Undo");
         redoItem = new JMenuItem("Redo");
         clearItem = new JMenuItem("Clear");
@@ -122,6 +158,8 @@ public final class SimpleEditor extends AbstractEditor {
         editMenu.add(redoItem);
         editMenu.add(clearItem);
 
+        // Search Menu
+        JMenu searchMenu = new JMenu("Search");
         findItem = new JMenuItem("Find");
         replaceItem = new JMenuItem("Replace (Case sensitive)");
         highlightItem = new JMenuItem("Highlight Matches");
@@ -130,6 +168,16 @@ public final class SimpleEditor extends AbstractEditor {
         searchMenu.add(replaceItem);
         searchMenu.add(highlightItem);
         
+        // Run Menu
+        JMenu runMenu = new JMenu("Run");
+        runItem = new JMenuItem("Run Code");
+        compileItem = new JMenuItem("Compile Only");
+        
+        runMenu.add(runItem);
+        runMenu.add(compileItem);
+        
+        // Settings Menu
+        JMenu settingsMenu = new JMenu("Settings");
         JMenuItem lightModeItem = new JMenuItem("Light Mode");
         JMenuItem darkModeItem = new JMenuItem("Dark Mode");
         syntaxItem = new JMenuItem("Toggle Syntax Highlighting");
@@ -141,195 +189,364 @@ public final class SimpleEditor extends AbstractEditor {
         lightModeItem.addActionListener(e -> applyLightMode());
         darkModeItem.addActionListener(e -> applyDarkMode());
 
-	    // 5. Add menu to the bar, and bar to the frame
-	    menuBar.add(fileMenu);
-	    menuBar.add(editMenu);
+        // Help Menu
+        JMenu helpMenu = new JMenu("Info");
+        JMenuItem helpItem = new JMenuItem("Help");
+        helpItem.addActionListener(e -> showHelp());
+        helpMenu.add(helpItem);
+        
+        // Add menus to bar
+        menuBar.add(fileMenu);
+        menuBar.add(editMenu);
         menuBar.add(searchMenu);
-        menuBar.add(helpMenu);
+        menuBar.add(runMenu);
         menuBar.add(settingsMenu);
-	    frame.setJMenuBar(menuBar);
-	    
-	    
-
-	    
-	    JMenuItem helpItem = new JMenuItem("Help");
-
-	    helpItem.addActionListener(e -> {
-	        JOptionPane.showMessageDialog(
-	            frame,
-	            "Welcome to the our Text Editor!\n\n"
-	          + "File:\nOpen and save text and java files.\n\n"
-	          + "Edit:\nUndo, redo, and clear text.\n\n"
-	          + "Search:\nFind words and replace text.\n\n"
-	          + "Use the buttons or menus to perform actions.\n\n"
-	          + "Brought to you by: Matthew Biegel, Robert Conti, \nMichael McGrath, Rui Li, Luke Padilla \n 2026",
-	          "Help",
-	            JOptionPane.INFORMATION_MESSAGE
-	        );
-	    });
-
-	    helpMenu.add(helpItem);
-	    
-	    // 6. Add logic to the items (optional but recommended)
-	    exitItem.addActionListener(e -> System.exit(0));
-	}
- 
-   
-   private void applyDarkMode() {
-	    Color bg = new Color(30, 30, 30);
-	    Color panelBg = new Color(45, 45, 45);
-	    Color textBg = new Color(35, 35, 35);
-	    Color fg = new Color(200, 200, 200);
-
-	    textPane.setBackground(textBg);
-	    textPane.setForeground(fg);
-	    textPane.setCaretColor(Color.WHITE);
-	    textPane.setSelectionColor(new Color(80, 120, 180));
-	    textPane.setSelectedTextColor(Color.WHITE);
-
-	    buttonRow.setBackground(panelBg);
-
-	    if (menuBar != null) {
-	        menuBar.setBackground(panelBg);
-	        menuBar.setForeground(fg);
-	    }
-	    
-	    for (MenuElement menu : menuBar.getSubElements()) {
-	        if (menu.getComponent() instanceof JMenu) {
-	            JMenu m = (JMenu) menu.getComponent();
-	            m.setForeground(Color.WHITE);
-	        }
-	    }
-
-	  
-	    frame.repaint();
-	}
-   
-   
-   
-   private void applyLightMode() {
-	    Color bg = Color.WHITE;
-	    Color panelBg = new Color(240, 240, 240);
-	    Color textBg = Color.WHITE;
-	    Color fg = Color.BLACK;
-
-	    textPane.setBackground(textBg);
-	    textPane.setForeground(fg);
-	    textPane.setCaretColor(Color.BLACK);
-	    textPane.setSelectionColor(new Color(180, 200, 240));
-	    textPane.setSelectedTextColor(Color.BLACK);
-
-	    buttonRow.setBackground(panelBg);
-
-	    if (menuBar != null) {
-	        menuBar.setBackground(panelBg);
-	        menuBar.setForeground(fg);
-	    }
-
-	    for (MenuElement menu : menuBar.getSubElements()) {
-	        if (menu.getComponent() instanceof JMenu) {
-	            JMenu m = (JMenu) menu.getComponent();
-	            m.setForeground(Color.BLACK);
-	        }
-	    }
-
-
-	    frame.repaint();
-	    
-	    
-	}
-   
-  
-  @Override
-  protected void uiShow() {
-    SwingUtilities.invokeLater(() -> frame.setVisible(true));
-  }
-
-  @Override
-  protected String uiGetText() { return textPane.getText(); }
-
-  @Override
-  protected void uiSetText(String text) { textPane.setText(text); }
-
-  @Override
-  protected void uiClearText() { textPane.setText(""); clearHighlights(); }
-
-  @Override
-  protected void uiAddButton(String label, Runnable action) {
-    JButton b = new JButton(label);
-    b.addActionListener(e -> action.run());
-    buttonRow.add(b);
-    buttonRow.revalidate();
-    buttonRow.repaint();
-  }
-
-  @Override
-  protected void uiAlert(String message) {
-    JOptionPane.showMessageDialog(frame, message);
-  }
-
-  @Override
-  protected String uiPrompt(String message) {
-    return JOptionPane.showInputDialog(frame, message);
-  }
-
-  @Override
-  protected void uiHighlight(String term) {
-    clearHighlights();
-    if (term == null || term.isEmpty()) return;
-
-    Highlighter hl = textPane.getHighlighter();
-    Highlighter.HighlightPainter painter =
-        new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 255, 0, 128));
-
-    String text = textPane.getText();
-    String hay = text.toLowerCase();
-    String needle = term.toLowerCase();
-
-    int index = 0;
-    while (true) {
-      index = hay.indexOf(needle, index);
-      if (index < 0) break;
-      try {
-        hl.addHighlight(index, index + term.length(), painter);
-      } catch (BadLocationException ignored) { }
-      index += term.length();
+        menuBar.add(helpMenu);
+        
+        frame.setJMenuBar(menuBar);
+        
+        // Menu actions
+        exitItem.addActionListener(e -> System.exit(0));
+        runItem.addActionListener(e -> onRunButtonClicked());
+        compileItem.addActionListener(e -> onCompileOnlyClicked());
     }
-  }
+    
+    private void setupButtons() {
+        // Add Run button to toolbar
+        uiAddButton("Run", this::onRunButtonClicked);
+        uiAddButton("Compile", this::onCompileOnlyClicked);
+        uiAddButton("Clear Console", this::clearConsole1);
+    }
+    
+    private void showHelp() {
+        JOptionPane.showMessageDialog(
+            frame,
+            "Welcome to the Java Code Editor!\n\n"
+          + "File:\n  Open and save Java files.\n\n"
+          + "Edit:\n  Undo, redo, and clear text.\n\n"
+          + "Search:\n  Find words and replace text.\n\n"
+          + "Run:\n  Compile and run Java code.\n  Compile Only - Check for errors without running.\n\n"
+          + "Requirements:\n  Must be run with a JDK (Java Development Kit)\n"
+          + "  Class must have a public static void main(String[] args)\n\n"
+          + "Brought to you by: Matthew Biegel, Robert Conti, \nMichael McGrath, Rui Li, Luke Padilla \n 2026",
+          "Help",
+          JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+    
+    private void applyDarkMode() {
+        Color bg = new Color(30, 30, 30);
+        Color panelBg = new Color(45, 45, 45);
+        Color textBg = new Color(35, 35, 35);
+        Color fg = new Color(200, 200, 200);
 
-  @Override
-  protected void uiReplace(String target, String replacement) {
-    if (target == null || target.isEmpty()) return;
-    String current = textPane.getText();
-    String updated = current.replace(target, replacement == null ? "" : replacement);
-    textPane.setText(updated);
-    clearHighlights();
-  }
+        textPane.setBackground(textBg);
+        textPane.setForeground(fg);
+        textPane.setCaretColor(Color.WHITE);
+        textPane.setSelectionColor(new Color(80, 120, 180));
+        textPane.setSelectedTextColor(Color.WHITE);
 
-  /*
-   * Removes highlights from display
-   * @param none
-   * @return none 
-   */
-  private void clearHighlights() {
-	  textPane.getHighlighter().removeAllHighlights();
-  }
-  // Getter for syntax highlighting
-  public JTextPane getTextPane() {
-      return textPane;
-  }
+        buttonRow.setBackground(panelBg);
+        consoleArea.setBackground(Color.BLACK);
+        consoleArea.setForeground(Color.GREEN);
+
+        if (menuBar != null) {
+            menuBar.setBackground(panelBg);
+            menuBar.setForeground(fg);
+        }
+        
+        frame.repaint();
+    }
+    
+    private void applyLightMode() {
+        Color bg = Color.WHITE;
+        Color panelBg = new Color(240, 240, 240);
+        Color textBg = Color.WHITE;
+        Color fg = Color.BLACK;
+
+        textPane.setBackground(textBg);
+        textPane.setForeground(fg);
+        textPane.setCaretColor(Color.BLACK);
+        textPane.setSelectionColor(new Color(180, 200, 240));
+        textPane.setSelectedTextColor(Color.BLACK);
+
+        buttonRow.setBackground(panelBg);
+        consoleArea.setBackground(Color.WHITE);
+        consoleArea.setForeground(Color.BLACK);
+
+        if (menuBar != null) {
+            menuBar.setBackground(panelBg);
+            menuBar.setForeground(fg);
+        }
+
+        frame.repaint();
+    }
+    
+    // Compiler integration methods
+    private void onRunButtonClicked() {
+        String sourceCode = textPane.getText();
+        if (sourceCode.trim().isEmpty()) {
+            uiAlert("No code to run!");
+            return;
+        }
+        
+        String className = extractClassName(sourceCode);
+        if (className == null) {
+            uiAlert("Could not find public class name in the code.\n"
+                  + "Make sure your code has: public class ClassName { ... }");
+            return;
+        }
+        
+        appendToConsole(">>> Compiling and running " + className + "...\n", Color.CYAN);
+        statusBar.setText(" Compiling...");
+        
+        // Run in background thread
+        new Thread(() -> {
+            try {
+                RunResult result = CompleteJavaRunner.compileAndRun(className, sourceCode, new String[0]);
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (result.isSuccess()) {
+                        appendToConsole(result.getOutput(), Color.GREEN);
+                        appendToConsole("\n>>> Execution completed successfully\n", Color.CYAN);
+                        statusBar.setText(" Ready - Last run: SUCCESS");
+                        tabbedPane.setSelectedIndex(1); // Switch to console tab
+                    } else {
+                        appendToConsole(">>> COMPILATION ERROR:\n", Color.RED);
+                        appendToConsole(result.getError() + "\n", Color.RED);
+                        statusBar.setText(" Ready - Last run: FAILED");
+                        
+                        // Highlight error lines in editor
+                        highlightErrorLines(result.getError());
+                    }
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> {
+                    appendToConsole(">>> ERROR: " + e.getMessage() + "\n", Color.RED);
+                    statusBar.setText(" Ready - Last run: ERROR");
+                });
+            }
+        }).start();
+    }
+    
+    private void onCompileOnlyClicked() {
+        String sourceCode = textPane.getText();
+        if (sourceCode.trim().isEmpty()) {
+            uiAlert("No code to compile!");
+            return;
+        }
+        
+        String className = extractClassName(sourceCode);
+        if (className == null) {
+            uiAlert("Could not find public class name in the code.");
+            return;
+        }
+        
+        appendToConsole(">>> Compiling " + className + "...\n", Color.CYAN);
+        statusBar.setText(" Compiling...");
+        
+        new Thread(() -> {
+            try {
+                CompilationResult result = CompleteJavaRunner.compileOnly(className, sourceCode);
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (result.isSuccess()) {
+                        appendToConsole(">>> Compilation successful!\n", Color.GREEN);
+                        statusBar.setText(" Ready - Compilation SUCCESS");
+                    } else {
+                        appendToConsole(">>> COMPILATION ERRORS:\n", Color.RED);
+                        for (CompilationError error : result.getErrors()) {
+                            appendToConsole(String.format("  Line %d: %s\n", 
+                                error.getLineNumber(), error.getMessage()), Color.RED);
+                        }
+                        statusBar.setText(" Ready - Compilation FAILED");
+                        highlightErrorLines(result.getErrors());
+                    }
+                    tabbedPane.setSelectedIndex(1);
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> {
+                    appendToConsole(">>> ERROR: " + e.getMessage() + "\n", Color.RED);
+                    statusBar.setText(" Ready - Compilation ERROR");
+                });
+            }
+        }).start();
+    }
+    
+    private String extractClassName(String sourceCode) {
+        java.util.regex.Pattern pattern = 
+            java.util.regex.Pattern.compile("public\\s+class\\s+(\\w+)");
+        java.util.regex.Matcher matcher = pattern.matcher(sourceCode);
+        
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+    
+    private void highlightErrorLines(String errorMessage) {
+        clearHighlights();
+        java.util.regex.Pattern pattern = 
+            java.util.regex.Pattern.compile("line\\s+(\\d+)");
+        java.util.regex.Matcher matcher = pattern.matcher(errorMessage);
+        
+        while (matcher.find()) {
+            int lineNumber = Integer.parseInt(matcher.group(1));
+            highlightLine(lineNumber);
+        }
+    }
+    
+    private void highlightErrorLines(java.util.List<CompilationError> errors) {
+        clearHighlights();
+        for (CompilationError error : errors) {
+            if (error.getLineNumber() > 0) {
+                highlightLine((int) error.getLineNumber());
+            }
+        }
+    }
+    
+    private void highlightLine(int lineNumber) {
+        try {
+            Element root = textPane.getDocument().getDefaultRootElement();
+            int start = root.getElement(lineNumber - 1).getStartOffset();
+            int end = root.getElement(lineNumber - 1).getEndOffset();
+            
+            Highlighter.HighlightPainter painter = 
+                new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 100, 100, 100));
+            textPane.getHighlighter().addHighlight(start, end, painter);
+        } catch (BadLocationException e) {
+            // Ignore
+        }
+    }
+    
+    private void appendToConsole(String text, Color color) {
+        SwingUtilities.invokeLater(() -> {
+            if (consoleArea != null) {
+                consoleArea.setForeground(color);
+                consoleArea.append(text);
+                consoleArea.setCaretPosition(consoleArea.getDocument().getLength());
+            }
+        });
+    }
+    
+    private void clearConsole1() {
+        SwingUtilities.invokeLater(() -> {
+            if (consoleArea != null) {
+                consoleArea.setText("");
+            }
+        });
+    }
+    
+    private void clearConsole() {
+        consoleArea.setText("");
+        appendToConsole(">>> Console cleared\n", Color.CYAN);
+    }
+    
+    private void showCompilingStatus(String message) {
+        statusBar.setText(" " + message);
+    }
+    
+    private void showError(String error) {
+        appendToConsole(">>> ERROR: " + error + "\n", Color.RED);
+        JOptionPane.showMessageDialog(frame, error, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    
+    private void showOutput(String output) {
+        appendToConsole(output, Color.WHITE);
+    }
+    
+    private void showStatus(String message) {
+        statusBar.setText(" " + message);
+    }
   
-  public JMenuItem getNewItem() { return newItem; }
-  public JMenuItem getOpenItem() { return openItem; }
-  public JMenuItem getSaveItem() { return saveItem; }
+    @Override
+    protected void uiShow() {
+        SwingUtilities.invokeLater(() -> frame.setVisible(true));
+    }
 
-  public JMenuItem getUndoItem() { return undoItem; }
-  public JMenuItem getRedoItem() { return redoItem; }
-  public JMenuItem getClearItem() { return clearItem; }
+    @Override
+    protected String uiGetText() { 
+        return textPane.getText(); 
+    }
 
-  public JMenuItem getFindItem() { return findItem; }
-  public JMenuItem getReplaceItem() { return replaceItem; }
-  public JMenuItem getHighlightItem() { return highlightItem; }
+    @Override
+    protected void uiSetText(String text) { 
+        textPane.setText(text); 
+    }
 
-  public JMenuItem getSyntaxItem() { return syntaxItem; }
+    @Override
+    protected void uiClearText() { 
+        textPane.setText(""); 
+        clearHighlights(); 
+    }
+
+    @Override
+    protected void uiAddButton(String label, Runnable action) {
+        JButton b = new JButton(label);
+        b.addActionListener(e -> action.run());
+        buttonRow.add(b);
+        buttonRow.revalidate();
+        buttonRow.repaint();
+    }
+
+    @Override
+    protected void uiAlert(String message) {
+        JOptionPane.showMessageDialog(frame, message);
+    }
+
+    @Override
+    protected String uiPrompt(String message) {
+        return JOptionPane.showInputDialog(frame, message);
+    }
+
+    @Override
+    protected void uiHighlight(String term) {
+        clearHighlights();
+        if (term == null || term.isEmpty()) return;
+
+        Highlighter hl = textPane.getHighlighter();
+        Highlighter.HighlightPainter painter =
+            new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 255, 0, 128));
+
+        String text = textPane.getText();
+        String hay = text.toLowerCase();
+        String needle = term.toLowerCase();
+
+        int index = 0;
+        while (true) {
+            index = hay.indexOf(needle, index);
+            if (index < 0) break;
+            try {
+                hl.addHighlight(index, index + term.length(), painter);
+            } catch (BadLocationException ignored) { }
+            index += term.length();
+        }
+    }
+
+    @Override
+    protected void uiReplace(String target, String replacement) {
+        if (target == null || target.isEmpty()) return;
+        String current = textPane.getText();
+        String updated = current.replace(target, replacement == null ? "" : replacement);
+        textPane.setText(updated);
+        clearHighlights();
+    }
+
+    private void clearHighlights() {
+        textPane.getHighlighter().removeAllHighlights();
+    }
+    
+    // Getters for menu items
+    public JTextPane getTextPane() { return textPane; }
+    public JMenuItem getNewItem() { return newItem; }
+    public JMenuItem getOpenItem() { return openItem; }
+    public JMenuItem getSaveItem() { return saveItem; }
+    public JMenuItem getUndoItem() { return undoItem; }
+    public JMenuItem getRedoItem() { return redoItem; }
+    public JMenuItem getClearItem() { return clearItem; }
+    public JMenuItem getFindItem() { return findItem; }
+    public JMenuItem getReplaceItem() { return replaceItem; }
+    public JMenuItem getHighlightItem() { return highlightItem; }
+    public JMenuItem getSyntaxItem() { return syntaxItem; }
+    
 }
