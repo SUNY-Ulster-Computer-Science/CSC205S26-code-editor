@@ -1,4 +1,4 @@
-package Syntax;
+package syntax;
 
 import simpleUi.SimpleEditor;
 import javax.swing.JTextPane;
