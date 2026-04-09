@@ -327,6 +327,7 @@ public final class SimpleEditor extends AbstractEditor {
     
     // Compiler integration methods
     private void onRunButtonClicked() {
+    	textPane.getHighlighter().removeAllHighlights();
         String sourceCode = textPane.getText();
         if (sourceCode.trim().isEmpty()) {
             uiAlert("No code to run!");
@@ -373,6 +374,7 @@ public final class SimpleEditor extends AbstractEditor {
     }
     
     private void onCompileOnlyClicked() {
+    	textPane.getHighlighter().removeAllHighlights();
         String sourceCode = textPane.getText();
         if (sourceCode.trim().isEmpty()) {
             uiAlert("No code to compile!");
@@ -428,7 +430,7 @@ public final class SimpleEditor extends AbstractEditor {
     }
     
     private void highlightErrorLines(String errorMessage) {
-        clearHighlights();
+        
         java.util.regex.Pattern pattern = 
             java.util.regex.Pattern.compile("line\\s+(\\d+)");
         java.util.regex.Matcher matcher = pattern.matcher(errorMessage);
@@ -440,7 +442,7 @@ public final class SimpleEditor extends AbstractEditor {
     }
     
     private void highlightErrorLines(java.util.List<CompilationError> errors) {
-        clearHighlights();
+   
         for (CompilationError error : errors) {
             if (error.getLineNumber() > 0) {
                 highlightLine((int) error.getLineNumber());
@@ -545,25 +547,31 @@ public final class SimpleEditor extends AbstractEditor {
     @Override
     protected void uiHighlight(String term) {
         clearHighlights();
-        if (term == null || term.isEmpty()) return;
+
+        if (term == null) return;
+        term = term.trim();
+        if (term.isEmpty()) return;
 
         Highlighter hl = textPane.getHighlighter();
         Highlighter.HighlightPainter painter =
             new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 255, 0, 128));
 
-        String text = textPane.getText();
-        String hay = text.toLowerCase();
-        String needle = term.toLowerCase();
+        try {
+            Document doc = textPane.getDocument();
+            String text = doc.getText(0, doc.getLength());
+            String hay = text.toLowerCase();
+            String needle = term.toLowerCase();
 
-        int index = 0;
-        while (true) {
-            index = hay.indexOf(needle, index);
-            if (index < 0) break;
-            try {
+            int index = 0;
+            while ((index = hay.indexOf(needle, index)) >= 0) {
                 hl.addHighlight(index, index + needle.length(), painter);
-            } catch (BadLocationException ignored) { }
-            index += term.length();
+                index += needle.length();
+            }
+        } catch (BadLocationException ignored) {
         }
+
+        textPane.repaint();
+        textPane.requestFocusInWindow();
     }
 
     @Override
@@ -577,6 +585,7 @@ public final class SimpleEditor extends AbstractEditor {
 
     private void clearHighlights() {
         textPane.getHighlighter().removeAllHighlights();
+        textPane.repaint();
     }
     
     // Getters for menu items
