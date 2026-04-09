@@ -3,6 +3,7 @@ import simpleUi.SimpleEditor;
 
 import java.nio.file.Files;
 import java.awt.*;
+import java.io.File;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.text.*;
@@ -339,32 +340,49 @@ public class Main {
     });
     
         ui.addButton("Save File", () -> {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle("Choose folder to save in");
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setAcceptAllFileFilterUsed(false);
+            File desktop = new File(System.getProperty("user.home"), "Desktop");
+            JFileChooser chooser = new JFileChooser(desktop);
 
-            int result = chooser.showOpenDialog(null);
+            chooser.setDialogTitle("Save .txt or .java file");
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.setFileHidingEnabled(true);
+
+            javax.swing.filechooser.FileNameExtensionFilter filter =
+                new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Text and Java files (*.txt, *.java)", "txt", "java");
+            chooser.setFileFilter(filter);
+
+            int result = chooser.showSaveDialog(null);
             if (result != JFileChooser.APPROVE_OPTION) return;
 
-            java.io.File folder = chooser.getSelectedFile();
-            if (folder == null) return;
+            File file = chooser.getSelectedFile();
+            if (file == null) return;
 
-            String fileName = ui.prompt("Enter file name (.txt or .java):");
-            if (fileName == null) return;
+            String parent = file.getParent();
+            String cleanName = sanitizeFileName(file.getName());
 
-            fileName = sanitizeFileName(fileName.trim());
-            if (fileName.isEmpty()) {
-                ui.alert("Invalid file name.");
-                return;
+            if (!cleanName.toLowerCase().endsWith(".txt") &&
+                !cleanName.toLowerCase().endsWith(".java")) {
+                cleanName += ".txt";
             }
 
-            if (!fileName.toLowerCase().endsWith(".txt") &&
-                !fileName.toLowerCase().endsWith(".java")) {
-                fileName += ".txt";
-            }
+            file = (parent == null)
+                ? new File(cleanName)
+                : new File(parent, cleanName);
 
-            java.io.File file = new java.io.File(folder, fileName);
+            if (file.exists()) {
+                int overwrite = JOptionPane.showConfirmDialog(
+                    null,
+                    "File already exists. Overwrite it?",
+                    "Confirm Overwrite",
+                    JOptionPane.YES_NO_OPTION
+                );
+
+                if (overwrite != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
 
             try {
                 java.nio.file.Files.writeString(file.toPath(), ui.getText());
@@ -402,7 +420,9 @@ public class Main {
     ui.getNewItem().addActionListener(e -> ui.setText(""));
 
     ui.getOpenItem().addActionListener(e -> {
-        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+    	 File desktop = new File(System.getProperty("user.home"), "Desktop");
+         JFileChooser chooser = new JFileChooser(desktop);
+         
         chooser.setDialogTitle("Open .txt file (or java tbd)");
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
@@ -437,32 +457,49 @@ public class Main {
     });
 
     ui.getSaveItem().addActionListener(e -> {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Choose folder to save in");
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
+        File desktop = new File(System.getProperty("user.home"), "Desktop");
+        JFileChooser chooser = new JFileChooser(desktop);
 
-        int result = chooser.showOpenDialog(null);
+        chooser.setDialogTitle("Save .txt or .java file");
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileHidingEnabled(true);
+
+        javax.swing.filechooser.FileNameExtensionFilter filter =
+            new javax.swing.filechooser.FileNameExtensionFilter(
+                "Text and Java files (*.txt, *.java)", "txt", "java");
+        chooser.setFileFilter(filter);
+
+        int result = chooser.showSaveDialog(null);
         if (result != JFileChooser.APPROVE_OPTION) return;
 
-        java.io.File folder = chooser.getSelectedFile();
-        if (folder == null) return;
+        File file = chooser.getSelectedFile();
+        if (file == null) return;
 
-        String fileName = ui.prompt("Enter file name (.txt or .java):");
-        if (fileName == null) return;
+        String parent = file.getParent();
+        String cleanName = sanitizeFileName(file.getName());
 
-        fileName = sanitizeFileName(fileName.trim());
-        if (fileName.isEmpty()) {
-            ui.alert("Invalid file name.");
-            return;
+        if (!cleanName.toLowerCase().endsWith(".txt") &&
+            !cleanName.toLowerCase().endsWith(".java")) {
+            cleanName += ".txt";
         }
 
-        if (!fileName.toLowerCase().endsWith(".txt") &&
-            !fileName.toLowerCase().endsWith(".java")) {
-            fileName += ".txt";
-        }
+        file = (parent == null)
+            ? new File(cleanName)
+            : new File(parent, cleanName);
 
-        java.io.File file = new java.io.File(folder, fileName);
+        if (file.exists()) {
+            int overwrite = JOptionPane.showConfirmDialog(
+                null,
+                "File already exists. Overwrite it?",
+                "Confirm Overwrite",
+                JOptionPane.YES_NO_OPTION
+            );
+
+            if (overwrite != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
 
         try {
             java.nio.file.Files.writeString(file.toPath(), ui.getText());
