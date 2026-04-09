@@ -36,6 +36,7 @@ import compiler.CompilationResult;
 import compiler.CompilationError;
 import compiler.InMemoryJavaFileObject;
 
+import formatting.Formatting;
 /*
  * Executes TextEditor program
  * Creates a Simple Text Editor with Save/Load functions, search functions
@@ -414,6 +415,11 @@ public class Main {
             "DO IT. DO IT. DO IT. All the way\n" +
             "You will ride life straight to perfect laughter. It’s the only good fight there is.\n\n" +
             "– Charles Bukowski"
+
+    ));
+
+    // Load demo text for testing.
+    ui.addButton("Clean Formatting", () -> ui.setText(Formatting.clean(ui.getText())
 
     ));
 
