@@ -32,7 +32,7 @@ public class JavaSyntaxHighlighterTextColor {
     private static final Color KEYWORD_COLOR = new Color(0, 0, 255);      // Blue
     private static final Color STRING_COLOR = new Color(0, 128, 0);       // Green
     private static final Color COMMENT_COLOR = new Color(128, 128, 128);  // Gray
-    private static final Color NUMBER_COLOR = new Color(0, 0, 205);       // Dark Blue
+    private static final Color NUMBER_COLOR = new Color(255, 0, 0);       // Red
     private static final Color ANNOTATION_COLOR = new Color(100, 100, 100); // Dark Gray
      
     // Java keywords
