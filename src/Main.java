@@ -164,7 +164,14 @@ public class Main {
                 ui.alert("Nothing to highlight.");
                 return;
             }
-            ui.highlight(term);
+
+            final String searchTerm = term;
+
+            if (syntaxManager != null && syntaxManager.isEnabled()) {
+                syntaxManager.disable();
+            }
+
+            SwingUtilities.invokeLater(() -> ui.highlight(searchTerm));
         });
 
         // SEARCH - ArrayList
@@ -509,9 +516,16 @@ public class Main {
             ui.alert("Nothing to highlight.");
             return;
         }
-        ui.highlight(term);
-    });
 
+        final String searchTerm = term;
+
+        if (syntaxManager != null && syntaxManager.isEnabled()) {
+            syntaxManager.disable();
+        }
+
+        SwingUtilities.invokeLater(() -> ui.highlight(searchTerm));
+    });
+    
     ui.getReplaceItem().addActionListener(e -> {
         String find = ui.prompt("Text to find:");
         if (find == null) return;
@@ -527,15 +541,22 @@ public class Main {
     });
 
     ui.getHighlightItem().addActionListener(e -> {
-        String term = ui.prompt("Highlight what word/phrase?");
-        if (term == null) return;
+    	String term = ui.prompt("Highlight what word/phrase?");
+    	if (term == null) return;
 
-        term = term.trim();
-        if (term.isEmpty()) {
-            ui.alert("Nothing to highlight.");
-            return;
-        }
-        ui.highlight(term);
+    	term = term.trim();
+    	if (term.isEmpty()) {
+    	    ui.alert("Nothing to highlight.");
+    	    return;
+    	}
+
+    	final String searchTerm = term;
+
+    	if (syntaxManager != null && syntaxManager.isEnabled()) {
+    	    syntaxManager.disable();
+    	}
+
+    	SwingUtilities.invokeLater(() -> ui.highlight(searchTerm));
     });
 
     ui.getSyntaxItem().addActionListener(e -> {
