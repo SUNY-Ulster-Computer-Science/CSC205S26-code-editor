@@ -294,19 +294,14 @@ public class Main {
         // LOAD FILE BUTTON
         ui.addButton("Load File", () -> {
             javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-            chooser.setDialogTitle("Open .txt file (or java tbd)");
+            chooser.setDialogTitle("Open .txt or .java file");
             chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
-
             chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                @Override public boolean accept(java.io.File f) {
-                    return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") ||
-                           f.getName().toLowerCase().endsWith(".java");
-                }
-                @Override public String getDescription() {
-                    return "Text files (*.txt, *.java)";
-                }
-            });
+
+            javax.swing.filechooser.FileNameExtensionFilter filter =
+            	    new javax.swing.filechooser.FileNameExtensionFilter(
+            	        "Text and Java files (*.txt, *.java)", "txt", "java");
+            	chooser.setFileFilter(filter);
 
             int result = chooser.showOpenDialog(null);
             if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
@@ -322,10 +317,10 @@ public class Main {
                 String fileContent = java.nio.file.Files.readString(file.toPath());
                 ui.setText(fileContent);
             } catch (Exception e) {
-                ui.alert("Error loading file: \n" + e.getMessage());
+                ui.alert("Error loading file:\n" + e.getMessage());
                 undoStack.pop();
             }
-            });
+        });
         
         ui.addButton("Toggle Syntax Highlighting", () -> {
             if (syntaxManager == null) {
@@ -343,45 +338,41 @@ public class Main {
             }
     });
     
-    ui.addButton("Save File", () -> {
+        ui.addButton("Save File", () -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Choose folder to save in");
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setAcceptAllFileFilterUsed(false);
 
-        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-        chooser.setDialogTitle("Save .txt or .java file");
-        //set to files only
-        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+            int result = chooser.showOpenDialog(null);
+            if (result != JFileChooser.APPROVE_OPTION) return;
 
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-            @Override public boolean accept(java.io.File f) {
-                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") ||
-                f.getName().toLowerCase().endsWith(".java");
+            java.io.File folder = chooser.getSelectedFile();
+            if (folder == null) return;
+
+            String fileName = ui.prompt("Enter file name (.txt or .java):");
+            if (fileName == null) return;
+
+            fileName = sanitizeFileName(fileName.trim());
+            if (fileName.isEmpty()) {
+                ui.alert("Invalid file name.");
+                return;
             }
-            @Override public String getDescription() {
-                return "Text files (*.txt)";
+
+            if (!fileName.toLowerCase().endsWith(".txt") &&
+                !fileName.toLowerCase().endsWith(".java")) {
+                fileName += ".txt";
+            }
+
+            java.io.File file = new java.io.File(folder, fileName);
+
+            try {
+                java.nio.file.Files.writeString(file.toPath(), ui.getText());
+                ui.alert("File saved:\n" + file.getAbsolutePath());
+            } catch (Exception e) {
+                ui.alert("Error saving file:\n" + e.getMessage());
             }
         });
-
-        int result = chooser.showSaveDialog(null);
-        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
-
-        java.io.File file = chooser.getSelectedFile();
-        if (file == null) return;
-
-        // Force .txt extension
-        String path = file.getAbsolutePath();
-        if (!path.toLowerCase().endsWith(".txt")) {
-            file = new java.io.File(path + ".txt");
-            //normalize and ensure file is saved as .txt
-        }
-
-        try {
-            java.nio.file.Files.writeString(file.toPath(), ui.getText());
-            ui.alert("File saved: \n" + file.getAbsolutePath());
-            //shows file directory
-        } catch (Exception e) {
-            ui.alert("Error saving file:\n" + e.getMessage());
-        }
-    });
     
     
 
@@ -446,35 +437,36 @@ public class Main {
     });
 
     ui.getSaveItem().addActionListener(e -> {
-        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-        chooser.setDialogTitle("Save .txt or .java file");
-        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
-
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Choose folder to save in");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-            @Override public boolean accept(java.io.File f) {
-                return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt") ||
-                       f.getName().toLowerCase().endsWith(".java");
-            }
-            @Override public String getDescription() {
-                return "Text files (*.txt, *.java)";
-            }
-        });
 
-        int result = chooser.showSaveDialog(null);
-        if (result != javax.swing.JFileChooser.APPROVE_OPTION) return;
+        int result = chooser.showOpenDialog(null);
+        if (result != JFileChooser.APPROVE_OPTION) return;
 
-        java.io.File file = chooser.getSelectedFile();
-        if (file == null) return;
+        java.io.File folder = chooser.getSelectedFile();
+        if (folder == null) return;
 
-        String path = file.getAbsolutePath();
-        if (!path.toLowerCase().endsWith(".txt") && !path.toLowerCase().endsWith(".java")) {
-            file = new java.io.File(path + ".txt");
+        String fileName = ui.prompt("Enter file name (.txt or .java):");
+        if (fileName == null) return;
+
+        fileName = sanitizeFileName(fileName.trim());
+        if (fileName.isEmpty()) {
+            ui.alert("Invalid file name.");
+            return;
         }
+
+        if (!fileName.toLowerCase().endsWith(".txt") &&
+            !fileName.toLowerCase().endsWith(".java")) {
+            fileName += ".txt";
+        }
+
+        java.io.File file = new java.io.File(folder, fileName);
 
         try {
             java.nio.file.Files.writeString(file.toPath(), ui.getText());
-            ui.alert("File saved: \n" + file.getAbsolutePath());
+            ui.alert("File saved:\n" + file.getAbsolutePath());
         } catch (Exception ex) {
             ui.alert("Error saving file:\n" + ex.getMessage());
         }
@@ -578,4 +570,12 @@ public class Main {
     ui.show();
   }
 
+    private static String sanitizeFileName(String name) {
+        if (name == null) return "untitled";
+
+        name = name.replaceAll("[\\\\/:*?\"<>|]", "_");
+        name = name.trim().replaceAll("[. ]+$", "");
+
+        return name.isEmpty() ? "untitled" : name;
+    }
 }
