@@ -67,6 +67,10 @@ public final class SimpleEditor extends AbstractEditor {
         // Enable line wrapping for JTextPane
         textPane.setEditorKit(new StyledEditorKit());
         textPane.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        textPane.setBackground(Color.WHITE);
+        textPane.setForeground(Color.BLACK);
+        textPane.setCaretColor(Color.BLACK);
+        recolorExistingText(Color.BLACK);
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 800);
@@ -260,6 +264,13 @@ public final class SimpleEditor extends AbstractEditor {
         }
     }
     
+    private void recolorExistingText(Color color) {
+        StyledDocument doc = textPane.getStyledDocument();
+        SimpleAttributeSet attrs = new SimpleAttributeSet();
+        StyleConstants.setForeground(attrs, color);
+        doc.setCharacterAttributes(0, doc.getLength(), attrs, false);
+    }
+    
     private void applyDarkMode() {
         Color bg = new Color(30, 30, 30);
         Color panelBg = new Color(45, 45, 45);
@@ -268,6 +279,7 @@ public final class SimpleEditor extends AbstractEditor {
 
         textPane.setBackground(textBg);
         textPane.setForeground(fg);
+        recolorExistingText(fg);
         textPane.setCaretColor(Color.WHITE);
         textPane.setSelectionColor(new Color(80, 120, 180));
         textPane.setSelectedTextColor(Color.WHITE);
@@ -294,6 +306,7 @@ public final class SimpleEditor extends AbstractEditor {
 
         textPane.setBackground(textBg);
         textPane.setForeground(fg);
+        recolorExistingText(fg);
         textPane.setCaretColor(Color.BLACK);
         textPane.setSelectionColor(new Color(180, 200, 240));
         textPane.setSelectedTextColor(Color.BLACK);
