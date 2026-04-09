@@ -541,7 +541,12 @@ public final class SimpleEditor extends AbstractEditor {
 
     @Override
     protected String uiPrompt(String message) {
-        return JOptionPane.showInputDialog(frame, message);
+    	return JOptionPane.showInputDialog(
+    		    frame,
+    		    message,
+    		    "Input",
+    		    JOptionPane.PLAIN_MESSAGE
+    		);
     }
 
     @Override
