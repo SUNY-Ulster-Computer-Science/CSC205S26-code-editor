@@ -234,6 +234,32 @@ public final class SimpleEditor extends AbstractEditor {
         );
     }
     
+    private void styleMenuBar(Color menuBg, Color menuFg, Color itemBg, Color itemFg) {
+        if (menuBar == null) return;
+
+        menuBar.setBackground(menuBg);
+        menuBar.setForeground(menuFg);
+        menuBar.setOpaque(true);
+
+        for (MenuElement element : menuBar.getSubElements()) {
+            Component comp = element.getComponent();
+
+            if (comp instanceof JMenu menu) {
+                menu.setOpaque(true);
+                menu.setBackground(menuBg);
+                menu.setForeground(menuFg);
+
+                for (Component itemComp : menu.getMenuComponents()) {
+                    if (itemComp instanceof JMenuItem item) {
+                        item.setOpaque(true);
+                        item.setBackground(itemBg);
+                        item.setForeground(itemFg);
+                    }
+                }
+            }
+        }
+    }
+    
     private void applyDarkMode() {
         Color bg = new Color(30, 30, 30);
         Color panelBg = new Color(45, 45, 45);
@@ -250,10 +276,12 @@ public final class SimpleEditor extends AbstractEditor {
         consoleArea.setBackground(Color.BLACK);
         consoleArea.setForeground(Color.GREEN);
 
-        if (menuBar != null) {
-            menuBar.setBackground(panelBg);
-            menuBar.setForeground(fg);
-        }
+        styleMenuBar(
+        	    new Color(45, 45, 45),   // top menu background
+        	    Color.WHITE,             // menu text
+        	    new Color(60, 60, 60),   // dropdown background
+        	    Color.WHITE              // dropdown text
+        	);
         
         frame.repaint();
     }
@@ -274,10 +302,12 @@ public final class SimpleEditor extends AbstractEditor {
         consoleArea.setBackground(Color.WHITE);
         consoleArea.setForeground(Color.BLACK);
 
-        if (menuBar != null) {
-            menuBar.setBackground(panelBg);
-            menuBar.setForeground(fg);
-        }
+        styleMenuBar(
+        	    new Color(240, 240, 240), // top menu background
+        	    Color.BLACK,              // menu text
+        	    Color.WHITE,              // dropdown background
+        	    Color.BLACK               // dropdown text
+        	);
 
         frame.repaint();
     }
@@ -517,7 +547,7 @@ public final class SimpleEditor extends AbstractEditor {
             index = hay.indexOf(needle, index);
             if (index < 0) break;
             try {
-                hl.addHighlight(index, index + term.length(), painter);
+                hl.addHighlight(index, index + needle.length(), painter);
             } catch (BadLocationException ignored) { }
             index += term.length();
         }
