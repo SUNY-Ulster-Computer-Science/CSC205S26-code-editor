@@ -23,7 +23,7 @@ import genericlist.StepCounter;
 import genericlist.GenericList;
 import linkedlist.LinkedGenericList;
 
-import syntax.JavaSyntaxHighlighter;
+
 import syntax.SyntaxHighlighterManager;
 import syntax.JavaSyntaxHighlighterTextColor;
 
@@ -53,6 +53,10 @@ public class Main {
     public static void main(String[] args) {
 
     	SimpleEditor ui = new SimpleEditor("CS2 Text Editor");
+    	
+    	// Initialize syntax highlighting (ALWAYS ON)
+    	syntaxManager = new SyntaxHighlighterManager(ui);
+    	syntaxManager.enable();
         
         Stack<String> undoStack =
                 new ListStack<String>(new ArrayGenericList<String>(new StepCounter()));
@@ -324,21 +328,7 @@ public class Main {
             }
         });
         
-        ui.addButton("Toggle Syntax Highlighting", () -> {
-            if (syntaxManager == null) {
-                syntaxManager = new SyntaxHighlighterManager(ui);
-                syntaxManager.enable();
-                ui.alert("Syntax highlighting enabled!\nJava keywords, strings, comments, and numbers will be color-coded.");
-            } else {
-                if (syntaxManager.isEnabled()) {
-                    syntaxManager.disable();
-                    ui.alert("Syntax highlighting disabled!");
-                } else {
-                    syntaxManager.enable();
-                    ui.alert("Syntax highlighting enabled!");
-                }
-            }
-    });
+        
     
         ui.addButton("Save File", () -> {
             File desktop = new File(System.getProperty("user.home"), "Desktop");
@@ -592,22 +582,6 @@ public class Main {
     	}
 
     	SwingUtilities.invokeLater(() -> ui.highlight(searchTerm));
-    });
-
-    ui.getSyntaxItem().addActionListener(e -> {
-        if (syntaxManager == null) {
-            syntaxManager = new SyntaxHighlighterManager(ui);
-            syntaxManager.enable();
-            ui.alert("Syntax highlighting enabled!\nJava keywords, strings, comments, and numbers will be color-coded.");
-        } else {
-            if (syntaxManager.isEnabled()) {
-                syntaxManager.disable();
-                ui.alert("Syntax highlighting disabled!");
-            } else {
-                syntaxManager.enable();
-                ui.alert("Syntax highlighting enabled!");
-            }
-        }
     });
     
     ui.show();
