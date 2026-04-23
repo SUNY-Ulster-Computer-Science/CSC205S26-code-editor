@@ -69,7 +69,7 @@ public final class SimpleEditor extends AbstractEditor {
     private void init() {
         // Enable line wrapping for JTextPane
         textPane.setEditorKit(new StyledEditorKit());
-        textPane.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        textPane.setFont(new Font("Courier New", Font.PLAIN, 14));
         textPane.setBackground(Color.WHITE);
         textPane.setForeground(Color.BLACK);
         textPane.setCaretColor(Color.BLACK);
