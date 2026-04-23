@@ -44,7 +44,7 @@ public final class SimpleEditor extends AbstractEditor {
     private JMenuItem replaceItem;
     private JMenuItem highlightItem;
 
-    private JMenuItem syntaxItem;
+    //private JMenuItem syntaxItem;
     
     // Output console area
     private JTextArea consoleArea;
@@ -184,11 +184,11 @@ public final class SimpleEditor extends AbstractEditor {
         JMenu settingsMenu = new JMenu("Settings");
         JMenuItem lightModeItem = new JMenuItem("Light Mode");
         JMenuItem darkModeItem = new JMenuItem("Dark Mode");
-        syntaxItem = new JMenuItem("Toggle Syntax Highlighting");
+        //syntaxItem = new JMenuItem("Toggle Syntax Highlighting");
 
         settingsMenu.add(lightModeItem);
         settingsMenu.add(darkModeItem);
-        settingsMenu.add(syntaxItem);
+        //settingsMenu.add(syntaxItem);
         
         lightModeItem.addActionListener(e -> applyLightMode());
         darkModeItem.addActionListener(e -> applyDarkMode());
@@ -604,6 +604,6 @@ public final class SimpleEditor extends AbstractEditor {
     public JMenuItem getFindItem() { return findItem; }
     public JMenuItem getReplaceItem() { return replaceItem; }
     public JMenuItem getHighlightItem() { return highlightItem; }
-    public JMenuItem getSyntaxItem() { return syntaxItem; }
+    //public JMenuItem getSyntaxItem() { return syntaxItem; }
     
 }
