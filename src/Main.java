@@ -464,6 +464,17 @@ public class Main {
         String newText = oldText.replace(find, replace == null ? "" : replace);
         ui.setText(newText);
     });
+    
+    ui.getformatItem().addActionListener(e -> {
+    	String oldText = ui.getText();
+    	undoStack.push(oldText);
+    	while (!redoStack.isEmpty()) redoStack.pop();
+
+    	String newText = String.join("\n",
+    	        Formatting.clean(oldText.split("\n")));
+
+    	ui.setText(newText);
+    });
 
     ui.getHighlightItem().addActionListener(e -> {
     	String term = ui.prompt("Highlight what word/phrase?");
