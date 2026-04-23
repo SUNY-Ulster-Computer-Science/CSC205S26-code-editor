@@ -42,6 +42,8 @@ public final class SimpleEditor extends AbstractEditor {
     private JMenuItem undoItem;
     private JMenuItem redoItem;
     private JMenuItem clearItem;
+    
+    private JMenuItem formatItem;
 
     private JMenuItem findItem;
     private JMenuItem replaceItem;
@@ -162,10 +164,12 @@ public final class SimpleEditor extends AbstractEditor {
         undoItem = new JMenuItem("Undo");
         redoItem = new JMenuItem("Redo");
         clearItem = new JMenuItem("Clear");
+        formatItem = new JMenuItem("Clean Formatting");
 
         editMenu.add(undoItem);
         editMenu.add(redoItem);
         editMenu.add(clearItem);
+        editMenu.add(formatItem);
 
         // Search Menu
         JMenu searchMenu = new JMenu("Search");
@@ -639,6 +643,7 @@ public final class SimpleEditor extends AbstractEditor {
     public JMenuItem getOpenItem() { return openItem; }
     public JMenuItem getSaveItem() { return saveItem; }
     public JMenuItem getUndoItem() { return undoItem; }
+    public JMenuItem getformatItem() { return formatItem; }
     public JMenuItem getRedoItem() { return redoItem; }
     public JMenuItem getClearItem() { return clearItem; }
     public JMenuItem getFindItem() { return findItem; }
