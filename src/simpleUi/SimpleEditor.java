@@ -127,7 +127,6 @@ public final class SimpleEditor extends AbstractEditor {
         
         JPanel content1 = new JPanel(new BorderLayout(10, 5));
         content1.add(tabbedPane, BorderLayout.CENTER);
-        content1.add(buttonRow, BorderLayout.SOUTH);
         content1.add(statusBar, BorderLayout.NORTH);
 
         frame.setContentPane(content1);
