@@ -1,6 +1,9 @@
 package simpleUi;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -134,6 +137,9 @@ public final class SimpleEditor extends AbstractEditor {
         
         // Add action buttons
         setupButtons();
+        
+        // KB shortcuts
+        kbShortcuts();
     }
     
     private void createMenuBar() {
@@ -220,6 +226,41 @@ public final class SimpleEditor extends AbstractEditor {
         uiAddButton("Run", this::onRunButtonClicked);
         uiAddButton("Compile", this::onCompileOnlyClicked);
         uiAddButton("Clear Console", this::clearConsole1);
+    }
+    
+    private void kbShortcuts() {
+        InputMap im = textPane.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = textPane.getActionMap();
+    	
+        // find action
+        Action findAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+            	findItem.doClick();
+            }
+        };
+        
+        // replace action
+        Action repAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+            	replaceItem.doClick();
+            }
+        };
+        
+        // save action
+        Action saveAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+            	saveItem.doClick();
+            }
+        };
+        
+        im.put(KeyStroke.getKeyStroke("control S"), "save");
+        am.put("save", saveAction);
+        
+        im.put(KeyStroke.getKeyStroke("control F"), "find");
+        am.put("find", findAction);
+        
+        im.put(KeyStroke.getKeyStroke("control R"), "rep");
+        am.put("rep", repAction);
     }
     
     private void showHelp() {
