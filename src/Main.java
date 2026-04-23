@@ -11,18 +11,16 @@ import javax.swing.event.*;
 import java.util.*;
 
 import arraylist.ArrayGenericList;
-import arraylist.ListQueue;
+
 import arraylist.ListStack;
-import arraylist.Queue;
+
 import arraylist.Stack;
-import bst.BST;
+
 
 import searchsort.SearchSort;
 
 import genericlist.StepCounter;
 import genericlist.GenericList;
-import linkedlist.LinkedGenericList;
-
 
 import syntax.SyntaxHighlighterManager;
 import syntax.JavaSyntaxHighlighterTextColor;
@@ -47,10 +45,11 @@ import formatting.Formatting;
  * */
 public class Main {
     
-    private static BST<String> wordTree = new BST<>();
     private static SyntaxHighlighterManager syntaxManager = null;
 
     public static void main(String[] args) {
+    	
+    	
 
     	SimpleEditor ui = new SimpleEditor("CS2 Text Editor");
     	
@@ -58,46 +57,11 @@ public class Main {
     	syntaxManager = new SyntaxHighlighterManager(ui);
     	syntaxManager.enable();
         
-        Stack<String> undoStack =
-                new ListStack<String>(new ArrayGenericList<String>(new StepCounter()));
+    	Stack<String> undoStack =
+    		    new ListStack<>(new ArrayGenericList<>(new StepCounter()));
 
-        Stack<String> redoStack =
-                new ListStack<String>(new ArrayGenericList<String>(new StepCounter()));
-
-        Queue<String> printQueue =
-                new ListQueue<>(new ArrayGenericList<String>(new StepCounter()));
-
-        Queue<Long> printTimes =
-                new ListQueue<>(new ArrayGenericList<Long>(new StepCounter()));
-
-        // ANALYZE BUTTON
-        ui.addButton("Analyze", () -> {
-            wordTree = new BST<>();
-            StepCounter bstCounter = new StepCounter();
-
-            String text = ui.getText();
-            String[] words = text.split("\\s+");
-
-            for (String w : words) {
-                if (w == null || w.isEmpty()) continue;
-
-                w = w.toLowerCase();
-                w = w.replaceAll("^[^a-zA-Z]+", "");
-                w = w.replaceAll("[^a-zA-Z]+$", "");
-                if (w.isEmpty()) continue;
-
-                wordTree.insert(w, bstCounter);
-            }
-
-            int bstSize = wordTree.size();
-            int bstInsertSteps = bstCounter.get();
-
-            ui.alert(
-                "BST built successfully!\n\n" +
-                "Unique words in BST: " + bstSize + "\n" +
-                "BST insertion comparisons: " + bstInsertSteps
-            );
-        });
+    		Stack<String> redoStack =
+    		    new ListStack<>(new ArrayGenericList<>(new StepCounter()));
         
         // REPLACE BUTTON
         ui.addButton("Replace (Case sensitive)", () -> {
@@ -205,97 +169,7 @@ public class Main {
                      "\nSteps: " + counter.get());
         });
 
-        // SEARCH - LinkedList
-        ui.addButton("Search LinkedList", () -> {
-            StepCounter counter = new StepCounter();
-            LinkedGenericList<String> list = new LinkedGenericList<>(counter);
-
-            String[] words = ui.getText().split("\\s+");
-            for (String w : words) {
-                if (w == null) continue;
-                w = w.toLowerCase();
-                w = w.replaceAll("^[^a-zA-Z]+", "");
-                w = w.replaceAll("[^a-zA-Z]+$", "");
-                if (w.isEmpty()) continue;
-                list.add(w);
-            }
-
-            String target = ui.prompt("Search for:");
-            if (target == null) return;
-
-            target = target.toLowerCase();
-            target = target.replaceAll("^[^a-zA-Z]+", "");
-            target = target.replaceAll("[^a-zA-Z]+$", "");
-            if (target.isEmpty()) {
-                ui.alert("Search becomes empty after cleaning.");
-                return;
-            }
-
-            counter.reset();
-            int index = SearchSort.linearSearch(list, target, counter);
-
-            ui.alert("LinkedList Search\nFound at: " + index +
-                     "\nSteps: " + counter.get());
-        });
-
-        // SEARCH - BST
-        ui.addButton("Search BST", () -> {
-            if (wordTree == null || wordTree.isEmpty()) {
-                ui.alert("BST is empty.\nRun Analyze first.");
-                return;
-            }
-
-            String query = ui.prompt("Search word for BST:");
-            if (query == null) return;
-
-            query = query.toLowerCase();
-            query = query.replaceAll("^[^a-zA-Z]+", "");
-            query = query.replaceAll("[^a-zA-Z]+$", "");
-            if (query.isEmpty()) {
-                ui.alert("Search word becomes empty after cleaning.");
-                return;
-            }
-
-            StepCounter arrayCounter = new StepCounter();
-            StepCounter linkedCounter = new StepCounter();
-
-            ArrayGenericList<String> arrayList = new ArrayGenericList<>(arrayCounter);
-            LinkedGenericList<String> linkedList = new LinkedGenericList<>(linkedCounter);
-
-            String[] textWords = ui.getText().split("\\s+");
-
-            for (String w : textWords) {
-                if (w == null) continue;
-
-                w = w.toLowerCase();
-                w = w.replaceAll("^[^a-zA-Z]+", "");
-                w = w.replaceAll("[^a-zA-Z]+$", "");
-
-                if (w.isEmpty()) continue;
-
-                arrayList.add(w);
-                linkedList.add(w);
-            }
-
-            arrayCounter.reset();
-            int arrayIndex = SearchSort.linearSearch(arrayList, query, arrayCounter);
-
-            linkedCounter.reset();
-            int linkedIndex = SearchSort.linearSearch(linkedList, query, linkedCounter);
-
-            StepCounter bstCounter = new StepCounter();
-            boolean bstFound = wordTree.contains(query, bstCounter);
-
-            ui.alert(
-                "Searching for: \"" + query + "\"\n\n" +
-                "ArrayList → index = " + arrayIndex +
-                " , comparisons = " + arrayCounter.get() + "\n" +
-                "LinkedList → index = " + linkedIndex +
-                " , comparisons = " + linkedCounter.get() + "\n" +
-                "BST → found = " + bstFound +
-                " , comparisons = " + bstCounter.get()
-            );
-        });
+        
 
         // LOAD FILE BUTTON
         ui.addButton("Load File", () -> {
@@ -552,17 +426,54 @@ public class Main {
     });
     
     ui.getReplaceItem().addActionListener(e -> {
-        String find = ui.prompt("Text to find:");
-        if (find == null) return;
-        String replace = ui.prompt("Replace with:");
-        if (replace == null) return;
-        
+        JTextField field1 = new JTextField(10);
+        JTextField field2 = new JTextField(10);
+
+        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+        panel.add(new JLabel("Text to find:"));
+        panel.add(field1);
+        panel.add(new JLabel("Replace with:"));
+        panel.add(field2);
+
+        int result = JOptionPane.showConfirmDialog(
+            ui.getTextPane(),
+            panel,
+            "Replace Text",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result != JOptionPane.OK_OPTION) return;
+
+        String find = field1.getText();
+        String replace = field2.getText();
+
+        if (find == null || find.isEmpty()) {
+            ui.alert("Nothing to find.");
+            return;
+        }
+
         String oldText = ui.getText();
+
+        // Save undo before change
         undoStack.push(oldText);
+
+        // Clear redo stack
         while (!redoStack.isEmpty()) redoStack.pop();
 
-        String newText = oldText.replace(find, replace);
+        String newText = oldText.replace(find, replace == null ? "" : replace);
         ui.setText(newText);
+    });
+    
+    ui.getformatItem().addActionListener(e -> {
+    	String oldText = ui.getText();
+    	undoStack.push(oldText);
+    	while (!redoStack.isEmpty()) redoStack.pop();
+
+    	String newText = String.join("\n",
+    	        Formatting.clean(oldText.split("\n")));
+
+    	ui.setText(newText);
     });
 
     ui.getHighlightItem().addActionListener(e -> {
