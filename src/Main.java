@@ -282,11 +282,6 @@ public class Main {
 
     ));
 
-    // Load demo text for testing.
-    ui.addButton("Clean Formatting", () -> ui.setText(Formatting.cleanLine(ui.getText())
-
-    ));
-
     ui.getNewItem().addActionListener(e -> ui.setText(""));
 
     ui.getOpenItem().addActionListener(e -> {
@@ -470,10 +465,7 @@ public class Main {
     	undoStack.push(oldText);
     	while (!redoStack.isEmpty()) redoStack.pop();
 
-    	String newText = String.join("\n",
-    	        Formatting.clean(oldText.split("\n")));
-
-    	ui.setText(newText);
+    	ui.setText(Formatting.clean(oldText));
     });
 
     ui.getHighlightItem().addActionListener(e -> {
