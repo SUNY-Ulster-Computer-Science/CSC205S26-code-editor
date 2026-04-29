@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.undo.UndoManager;
 
 import compiler.CompleteJavaRunner;
 import compiler.MemoryJavaFileManager;
@@ -57,11 +58,15 @@ public final class SimpleEditor extends AbstractEditor {
     
     // Status bar
     private JLabel statusBar;
+    
+    // Undo and Redo
+    private UndoManager undoManager;
 
     public SimpleEditor(String title) {
         frame = new JFrame(title);
         textPane = new JTextPane();
         buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        undoManager = new UndoManager();
         init();
     }
     
@@ -79,6 +84,8 @@ public final class SimpleEditor extends AbstractEditor {
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 800);
+        
+        textPane.getDocument().addUndoableEditListener(undoManager);
         
         // Create tabbed pane for editor and console
         tabbedPane = new JTabbedPane();
@@ -256,6 +263,24 @@ public final class SimpleEditor extends AbstractEditor {
             }
         };
         
+        // undo action
+        Action undoAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+            	if(undoManager.canUndo()) {
+            		undoManager.undo();
+            	}
+            }
+        };
+        
+        // redo action
+        Action redoAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+            	if(undoManager.canRedo()) {
+            		undoManager.redo();
+            	}
+            }
+        };
+        
         im.put(KeyStroke.getKeyStroke("control S"), "save");
         am.put("save", saveAction);
         
@@ -264,6 +289,12 @@ public final class SimpleEditor extends AbstractEditor {
         
         im.put(KeyStroke.getKeyStroke("control R"), "rep");
         am.put("rep", repAction);
+        
+        im.put(KeyStroke.getKeyStroke("control Z"), "undo");
+        am.put("undo", undoAction);
+
+        im.put(KeyStroke.getKeyStroke("control Y"), "redo");
+        am.put("redo", redoAction);
     }
     
     private void showHelp() {
@@ -650,5 +681,8 @@ public final class SimpleEditor extends AbstractEditor {
     public JMenuItem getReplaceItem() { return replaceItem; }
     public JMenuItem getHighlightItem() { return highlightItem; }
     //public JMenuItem getSyntaxItem() { return syntaxItem; }
+    
+    // getter for UndoManager
+    public UndoManager getUndoManager() { return undoManager; }
     
 }
