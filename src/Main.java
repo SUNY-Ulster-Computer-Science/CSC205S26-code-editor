@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.undo.UndoManager;
 import javax.swing.event.*;
 import java.util.*;
 
@@ -48,10 +49,8 @@ public class Main {
     private static SyntaxHighlighterManager syntaxManager = null;
 
     public static void main(String[] args) {
-    	
-    	
-
     	SimpleEditor ui = new SimpleEditor("CS2 Text Editor");
+    	UndoManager um = ui.getUndoManager();
     	
     	// Initialize syntax highlighting (ALWAYS ON)
     	syntaxManager = new SyntaxHighlighterManager(ui);
@@ -157,23 +156,15 @@ public class Main {
     });
 
     ui.getUndoItem().addActionListener(e -> {
-        if (undoStack.isEmpty()) return;
-
-        String current = ui.getText();
-        redoStack.push(current);
-
-        String prev = undoStack.pop();
-        ui.setText(prev);
+    	if(um.canUndo()) {
+    		um.undo();
+    	}
     });
 
     ui.getRedoItem().addActionListener(e -> {
-        if (redoStack.isEmpty()) return;
-
-        String current = ui.getText();
-        undoStack.push(current);
-
-        String restored = redoStack.pop();
-        ui.setText(restored);
+    	if(um.canRedo()) {
+    		um.redo();
+    	}
     });
 
     ui.getClearItem().addActionListener(e -> {

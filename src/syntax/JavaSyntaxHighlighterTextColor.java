@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.text.*;
 import javax.swing.event.*;
+import javax.swing.undo.UndoManager;
 
 /**
  * Syntax highlighter that changes text color (not background)
@@ -19,6 +20,7 @@ public class JavaSyntaxHighlighterTextColor {
     private final StyleContext styleContext;
     private final Timer highlightTimer;
     private boolean enabled = true;
+    private UndoManager undoManager; // Add reference to UndoManager
     
     // Style names
     private static final String STYLE_KEYWORD = "keyword";
@@ -76,6 +78,13 @@ public class JavaSyntaxHighlighterTextColor {
     }
     
     /**
+     * Set the UndoManager to temporarily disable during highlighting
+     */
+    public void setUndoManager(UndoManager manager) {
+        this.undoManager = manager;
+    }
+    
+    /**
      * Set up the styles for different syntax elements
      */
     private void setupStyles() {
@@ -120,13 +129,18 @@ public class JavaSyntaxHighlighterTextColor {
     }
     
     /**
-     * Perform the syntax highlighting
+     * Perform the syntax highlighting without creating undoable edits
      */
     private void highlight() {
         if (!enabled || textPane == null) return;
         
         SwingUtilities.invokeLater(() -> {
             try {
+                // Temporarily remove UndoManager to prevent style changes from being recorded
+                if (undoManager != null) {
+                    document.removeUndoableEditListener(undoManager);
+                }
+                
                 String text = document.getText(0, document.getLength());
                 
                 Style defaultStyle = styleContext.getStyle(STYLE_DEFAULT);
@@ -135,7 +149,6 @@ public class JavaSyntaxHighlighterTextColor {
                 document.setCharacterAttributes(0, text.length(), 
                     styleContext.getStyle(STYLE_DEFAULT), true);
                 
-                
                 // Apply different syntax highlighting
                 highlightKeywords(text);
                 highlightStrings(text);
@@ -143,8 +156,17 @@ public class JavaSyntaxHighlighterTextColor {
                 highlightNumbers(text);
                 highlightAnnotations(text);
                 
+                // Restore UndoManager after highlighting is done
+                if (undoManager != null) {
+                    document.addUndoableEditListener(undoManager);
+                }
+                
             } catch (Exception e) {
                 e.printStackTrace();
+                // Make sure to restore UndoManager even if there's an error
+                if (undoManager != null) {
+                    document.addUndoableEditListener(undoManager);
+                }
             }
         });
     }
@@ -253,15 +275,25 @@ public class JavaSyntaxHighlighterTextColor {
     public void disable() {
         enabled = false;
         try {
-        	String text = document.getText(0, document.getLength());
-
-        	Style defaultStyle = styleContext.getStyle(STYLE_DEFAULT);
-        	StyleConstants.setForeground(defaultStyle, textPane.getForeground());
-
-        	document.setCharacterAttributes(0, text.length(),
-        	    defaultStyle, true);
+            // Remove UndoManager temporarily while clearing styles
+            if (undoManager != null) {
+                document.removeUndoableEditListener(undoManager);
+            }
+            
+            String text = document.getText(0, document.getLength());
+            Style defaultStyle = styleContext.getStyle(STYLE_DEFAULT);
+            StyleConstants.setForeground(defaultStyle, textPane.getForeground());
+            document.setCharacterAttributes(0, text.length(), defaultStyle, true);
+            
+            // Restore UndoManager
+            if (undoManager != null) {
+                document.addUndoableEditListener(undoManager);
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            if (undoManager != null) {
+                document.addUndoableEditListener(undoManager);
+            }
         }
     }
     
@@ -282,5 +314,4 @@ public class JavaSyntaxHighlighterTextColor {
     public boolean isEnabled() {
         return enabled;
     }
-    
 }

@@ -2,6 +2,7 @@ package syntax;
 
 import simpleUi.SimpleEditor;
 import javax.swing.JTextPane;
+import javax.swing.undo.UndoManager;
 
 /**
  * Manages syntax highlighting for the SimpleEditor
@@ -10,8 +11,9 @@ import javax.swing.JTextPane;
 public class SyntaxHighlighterManager {
     
     private JavaSyntaxHighlighterTextColor highlighter;
-    private final SimpleEditor editor;  // Changed from Editor to SimpleEditor
+    private final SimpleEditor editor;
     private JTextPane textPane;
+    private UndoManager undoManager;
     
     /**
      * Constructor - gets the text pane from the editor
@@ -19,10 +21,12 @@ public class SyntaxHighlighterManager {
      */
     public SyntaxHighlighterManager(SimpleEditor editor) {
         this.editor = editor;
-        this.textPane = editor.getTextPane();  // Use the getter we added
+        this.textPane = editor.getTextPane();
+        this.undoManager = editor.getUndoManager(); // Get UndoManager
         
         if (textPane != null) {
             this.highlighter = new JavaSyntaxHighlighterTextColor(textPane);
+            this.highlighter.setUndoManager(undoManager); // Pass to highlighter
         }
     }
     
@@ -59,5 +63,4 @@ public class SyntaxHighlighterManager {
     public boolean isEnabled() {
         return highlighter != null && highlighter.isEnabled();
     }
-   
 }
